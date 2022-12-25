@@ -6,17 +6,12 @@ class User(models.Model):
   firstName = models.CharField(max_length=100)
   lastName = models.CharField(max_length=100)
   password = models.CharField(max_length=100)
-  # role = models.IntegerField(max_length=20, default="User")
-  
+  role = models.IntegerField()
+  fees = models.FloatField(null=True)
 
-
-class Student(User):
-  fees = models.FloatField()
-
-
-# class Roles(object):
-#   ADMIN = 1
-#   STAFF = 2
-#   STUDENT = 3
+class Roles(object):
+  ADMIN = 1
+  STAFF = 2
+  STUDENT = 3
 
 

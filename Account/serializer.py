@@ -1,6 +1,5 @@
+from Account.models import *
 from rest_framework import serializers
-
-from Login.models import *
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -9,9 +8,6 @@ class UserSerializer(serializers.ModelSerializer):
       fields = '__all__'
 
 
-class StudentSerializer(serializers.ModelSerializer):
-  class Meta:
-    model = Student
-    fields = "__all__"
+
 
 
