@@ -1,7 +1,6 @@
 import logging
 
 from django.db import connection
-from django.shortcuts import render
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -32,3 +31,5 @@ def getInfo(request):
   return Response(serializer.data)
 
 
+query = Student.objects.all()
+logger.warning(query)

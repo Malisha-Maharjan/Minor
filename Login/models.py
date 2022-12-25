@@ -14,7 +14,6 @@ class Student(User):
   fees = models.FloatField()
 
 
-
 # class Roles(object):
 #   ADMIN = 1
 #   STAFF = 2
