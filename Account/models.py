@@ -14,4 +14,3 @@ class Roles(object):
   STAFF = 2
   STUDENT = 3
 
-
