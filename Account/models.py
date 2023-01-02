@@ -14,7 +14,7 @@ class User(models.Model):
   role = models.IntegerField(null=True)
   
 # class Fee(models.Model):
-#   student = models.ForeignKey(User)
+#   student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="student_fee")
 #   totalFee = models.FloatField()
 #   firstSem = models.FloatField()
 #   secondSem = models.FloatField()
@@ -24,13 +24,14 @@ class User(models.Model):
 #   sixthSem = models.FloatField()
 #   seventhSem = models.FloatField()
 #   eighthSem = models.FloatField()
+
+# class Scholarship(models.Model):  
+#   student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="student_scholarship")
 #   scholarship = models.FloatField(null=True)
   
-
 # payment model
 # class Payment(models.Model):
-#   student = models.ForeignKey(User)
-
+#   student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="student_scholarship")
+#   payment = models.FloatField()
 
 # f'select * from User where role = {Roles.STUDENT}
-
