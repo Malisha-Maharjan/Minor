@@ -66,20 +66,20 @@ def deleteInfo(request, id):
   user.delete()
   return Response("true", status=status.HTTP_200_OK)
 
-# @api_view(['POST'])
-# def login(request):
-#   data = json.loads(request.body)
-#   username = data['username']
-#   password = data['password']
-#   try:
-#     user = User.objects.get(userName = username, password = password)
-#     access = AccessToken.for_user(user)
-#     access['role'] = user.role
-#     data = {'access': str(access)}
-#     logger.warning(user.userName)
-#     return Response(data, status=status.HTTP_200_OK)
-#   except Exception as e:
-#     return Response('false', status=status.HTTP_401_UNAUTHORIZED)
+@api_view(['POST'])
+def login(request):
+  data = json.loads(request.body)
+  username = data['username']
+  password = data['password']
+  try:
+    user = User.objects.get(userName = username, password = password)
+    access = AccessToken.for_user(user)
+    access['role'] = user.role
+    data = {'access': str(access)}
+    logger.warning(user.userName)
+    return Response(data, status=status.HTTP_200_OK)
+  except Exception as e:
+    return Response('false', status=status.HTTP_401_UNAUTHORIZED)
 
 # @api_view(['POST'])
 # def payment(request, id):
