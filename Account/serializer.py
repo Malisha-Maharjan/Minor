@@ -10,9 +10,15 @@ class UserSerializer(serializers.ModelSerializer):
 # class FeeSerializer(serializers.ModelSerializer):
 #   class Meta: 
 #     model = Fee
-#     fields = '__all__'
+#     fields = ('totalFee')
 
 # class ScholarshipSerializer(serializers.ModelSerializer):
 #   class Meta:
 #     model = Scholarship
 #     fields = '__all__'
+
+
+# class PaymentSerializer(serializers.ModelSerializer):
+#   class Meta:
+#     model = Payment
+#     fields = ('payment')
