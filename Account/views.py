@@ -1,11 +1,15 @@
 import json
 import logging
 
+# from rest_framework_simplejwt.utils import 
+import jwt
 from django.db import connection
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
+
+from backend.settings import SIMPLE_JWT
 
 from .models import *
 from .serializer import *
@@ -13,30 +17,39 @@ from .serializer import *
 logger = logging.getLogger(__name__)
 cursor=connection.cursor()
 
+def validate_token(request):
+  token = request.headers.get('Authorization')
+  if token:
+    if token:
+      logger.warning('inside token')
+      payload =  jwt.decode(
+      token,
+      SIMPLE_JWT['SIGNING_KEY'],
+      algorithms=[SIMPLE_JWT['ALGORITHM']],
+)
+  return payload
 
 @api_view(['POST'])
 def studentRegister(request):
   message=""
   userSerializer = UserSerializer(data=request.data)
-
-  if userSerializer.is_valid():
-    user = User(
-      userName=userSerializer.data['userName'],
-      firstName=userSerializer.data['firstName'],
-      lastName=userSerializer.data['lastName'],
-      password=userSerializer.data['password'],
-      role=3
-    ) 
-    user.save()
-    # if userSerializer.data['role'] == 3:
-    #   feeSerializer = FeeSerializer(data=request.data)
-    #   if feeSerializer.is_valid():
-    #     fee = Fee(totalFee = FeeSerializer.data['totalFee']) 
-    message = "true"
-    logger.warning(userSerializer.data['role'])
-    return Response(message, status=status.HTTP_200_OK)
-  message = "false"
-  return Response(message, status=status.HTTP_400_BAD_REQUEST)
+  payload = validate_token(request)
+  if payload['role'] == 1:
+    if userSerializer.is_valid():
+      user = User(
+        userName=userSerializer.data['userName'],
+        firstName=userSerializer.data['firstName'],
+        lastName=userSerializer.data['lastName'],
+        password=userSerializer.data['password'],
+        role=userSerializer.data['role']
+      ) 
+      user.save()
+      message = "true"
+      return Response(message, status=status.HTTP_200_OK)
+    message = "false"
+    return Response(message, status=status.HTTP_400_BAD_REQUEST)
+  message = {'message': "Unauthorized access"}
+  return Response(message)
 # select * from users where username='' and password = ''
 
 @api_view(['GET'])
@@ -92,4 +105,3 @@ def login(request):
 #     payment.save()
 #     return Response('true', status=status.HTTP_200_OK)
 #   return Response('false', status=status.HTTP_400_BAD_REQUEST)
-

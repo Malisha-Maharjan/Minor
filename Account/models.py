@@ -13,23 +13,24 @@ class User(models.Model):
   password = models.CharField(max_length=100)
   role = models.IntegerField(null=True)
   
-class Fee(models.Model):
-  student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="student_fee")
-  totalFee = models.FloatField()
-  admissionFee = models.FloatField()
-  firstSem = models.FloatField()
-  secondSem = models.FloatField()
-  thirdSem = models.FloatField()
-  fourthSem = models.FloatField()
-  fifthSem = models.FloatField()
-  sixthSem = models.FloatField()
-  seventhSem = models.FloatField()
-  eighthSem = models.FloatField()
-  scholarship = models.FloatField(null=True)
+# class Fee(models.Model):
+#   student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="student_fee")
+#   totalFee = models.FloatField()
+#   admissionFee = models.FloatField()
+#   firstSem = models.FloatField()
+#   secondSem = models.FloatField()
+#   thirdSem = models.FloatField()
+#   fourthSem = models.FloatField()
+#   fifthSem = models.FloatField()
+#   sixthSem = models.FloatField()
+#   seventhSem = models.FloatField()
+#   eighthSem = models.FloatField()
+#   scholarship = models.FloatField(null=True)
   
-# # payment model
+# # # payment model
 # class Payment(models.Model):
 #   student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="student_scholarship")
 #   payment = models.FloatField()
 
 # f'select * from User where role = {Roles.STUDENT}
+#query ma garni minus
