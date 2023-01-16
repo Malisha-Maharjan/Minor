@@ -11,21 +11,24 @@ class User(models.Model):
   firstName = models.CharField(max_length=100)
   lastName = models.CharField(max_length=100)
   password = models.CharField(max_length=100)
-  role = models.IntegerField(null=True)
+  role = models.IntegerField()
+
+  def __str__(self):
+    return f'{self.userName} has {self.role}'
   
-# class Fee(models.Model):
-#   student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="student_fee")
-#   totalFee = models.FloatField()
-#   admissionFee = models.FloatField()
-#   firstSem = models.FloatField()
-#   secondSem = models.FloatField()
-#   thirdSem = models.FloatField()
-#   fourthSem = models.FloatField()
-#   fifthSem = models.FloatField()
-#   sixthSem = models.FloatField()
-#   seventhSem = models.FloatField()
-#   eighthSem = models.FloatField()
-#   scholarship = models.FloatField(null=True)
+class Student(models.Model):
+  student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="student")
+  totalFee = models.FloatField()
+  # admissionFee = models.FloatField(default=1)
+  # firstSem = models.FloatField()
+  # secondSem = models.FloatField()
+  # thirdSem = models.FloatField()
+  # fourthSem = models.FloatField()
+  # fifthSem = models.FloatField()
+  # sixthSem = models.FloatField()
+  # seventhSem = models.FloatField()
+  # eighthSem = models.FloatField()
+  # scholarship = models.FloatField(null=True)
   
 # # # payment model
 # class Payment(models.Model):

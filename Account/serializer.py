@@ -7,10 +7,12 @@ class UserSerializer(serializers.ModelSerializer):
     model = User
     fields = '__all__'
 
-# class FeeSerializer(serializers.ModelSerializer):
-#   class Meta: 
-#     model = Fee
-#     fields = ('totalFee')
+class StudentSerializer(serializers.ModelSerializer):
+  class Meta: 
+    model = Student
+    fields = ['totalFee']
+
+
 
 # class ScholarshipSerializer(serializers.ModelSerializer):
 #   class Meta:
