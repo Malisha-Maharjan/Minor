@@ -98,9 +98,9 @@ def login(request):
     return Response('false', status=status.HTTP_401_UNAUTHORIZED)
 
 # @api_view(['POST'])
-# def payment(request, id):
+# def transaction(request, id):
 #   user = User.objects.get(pk=id)
-#   paymentSerializer = PaymentSerializer(data=request.data)
+#   paymentSerializer =(data=request.data)
 #   if paymentSerializer.is_valid():
 #     payment = Payment(payment=paymentSerializer['payment'])
 #     payment.student = user

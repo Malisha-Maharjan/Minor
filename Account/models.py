@@ -30,10 +30,10 @@ class Student(models.Model):
   # eighthSem = models.FloatField()
   # scholarship = models.FloatField(null=True)
   
-# # # payment model
-# class Payment(models.Model):
-#   student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="student_scholarship")
-#   payment = models.FloatField()
+# # payment model
+class Transaction(models.Model):
+  student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="student_transaction")
+  transaction = models.FloatField()
 
 # f'select * from User where role = {Roles.STUDENT}
 #query ma garni minus
