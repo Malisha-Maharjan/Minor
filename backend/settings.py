@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'rest_framework_simplejwt',
+    'khalti'
 ]
 
 REST_FRAMEWORK = {
@@ -205,3 +206,6 @@ MEDIA_URL = '/media/'
 
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT =os.path.join(BASE_DIR, 'staticfiles')
+
+KHALTI_SECRET_KEY = "Key test_secret_key_7b0419b866204b34bbef1645e5197e95"
+KHALTI_VERIFY_URL = "https://khalti.com/api/v2/payment/verify/"

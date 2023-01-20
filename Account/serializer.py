@@ -12,8 +12,16 @@ class StudentSerializer(serializers.ModelSerializer):
     model = Student
     fields = ['totalFee']
 
+class ManualPaymentSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = Transaction
+    fields = ['transaction']
 
-
+class StudentDetailsSerializer(serializers.ModelSerializer):
+  student = StudentSerializer(many=True)
+  class Meta:
+    model = User
+    fields = '__all__'
 # class ScholarshipSerializer(serializers.ModelSerializer):
 #   class Meta:
 #     model = Scholarship

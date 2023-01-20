@@ -14,7 +14,7 @@ class User(models.Model):
   role = models.IntegerField()
 
   def __str__(self):
-    return f'{self.userName} has {self.role}'
+    return f'{self.userName} has role{self.role}'
   
 class Student(models.Model):
   student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="student")

@@ -2,27 +2,21 @@ import json
 import logging
 
 # from rest_framework_simplejwt.utils import 
-import jwt
 from django.db import connection
 from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.decorators import (api_view, authentication_classes,
                                        permission_classes)
 from rest_framework.response import Response
-from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework_simplejwt.views import TokenVerifyView
 
 from backend.settings import SIMPLE_JWT
 
-from .models import *
-from .serializer import *
+from ..models import *
+from ..serializer import *
 
 logger = logging.getLogger(__name__)
 cursor=connection.cursor()
-
-
-
 
 @api_view(['POST'])
 @authentication_classes([])
@@ -30,6 +24,7 @@ cursor=connection.cursor()
 def userCreate(request):
   message=""
   userSerializer = UserSerializer(data=request.data)
+  logger.warning(userSerializer)
   if userSerializer.is_valid():
     user = User(
       userName=userSerializer.data['userName'],
@@ -91,24 +86,11 @@ def login(request):
     user = User.objects.get(userName = username, password = password)
     access = AccessToken.for_user(user)
     access['role'] = user.role
-    data = {'access': str(access)}
-    logger.warning(user.userName)
+    userdata = UserSerializer(user)
+    data = {'access': str(access), 'user': userdata.data}
     return Response(data, status=status.HTTP_200_OK)
   except Exception as e:
     return Response('false', status=status.HTTP_401_UNAUTHORIZED)
-
-# @api_view(['POST'])
-# def transaction(request, id):
-#   user = User.objects.get(pk=id)
-#   paymentSerializer =(data=request.data)
-#   if paymentSerializer.is_valid():
-#     payment = Payment(payment=paymentSerializer['payment'])
-#     payment.student = user
-#     user.totalFee = user.totalFee - payment.payment
-#     payment.save()
-#     return Response('true', status=status.HTTP_200_OK)
-#   return Response('false', status=status.HTTP_400_BAD_REQUEST)
-
 
 @api_view(['POST'])
 @authentication_classes([])
@@ -134,26 +116,14 @@ def student(request, id):
 def hello(request):
   logger.warning('hhhh')
   message = {'message': 'hello'}
-  # token = request.headers.get('Authorization')
-  # try:
-  #   token = request.headers.get('Authorization').split()
-  #   logger.warning(token)
-  #   payload = jwt.decode(
-  # token[1],
-  # SIMPLE_JWT['SIGNING_KEY'],
-  # algorithms=[SIMPLE_JWT['ALGORITHM']])
-  #   logger.warning(payload)
-  #   # token is valid
-  # except Exception as e:
-  #   return Response('invalid token', status=status.HTTP_401_UNAUTHORIZED)
   
   return Response(message)
 
-
-# @api_view(['POST'])
-# @authentication_classes([])
-# @permission_classes([])
-# def check(request):
-#   data=json.loads(request.body)
-#   logger.warning(data)
-#   return Response('ok')
+@api_view(['GET'])
+def details(request, username):
+  user = User.objects.get(userName = username)
+  student = Student.objects.get(student__userName = username)
+  serializer = UserSerializer(user)
+  StudentSerializer = StudentDetailsSerializer(user)
+  logger.warning(student)
+  return Response(StudentSerializer.data)
