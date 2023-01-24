@@ -32,7 +32,7 @@ def transaction(request, username):
         type = serializer.data['type'],
         amount = serializer.data['amount'])
       transaction.save()
-      # sendEmail(student.student)
+      sendEmail(student.student)
       message={}
       if transaction.type == 1:
         message={"message": "Bill is added"}
@@ -116,6 +116,7 @@ def bulkBillAdd(request):
       type=1,
       amount = amount
     )
+    sendEmail(student.student)
     transaction.save()
   return Response("ok")
 
