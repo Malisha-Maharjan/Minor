@@ -12,21 +12,18 @@ env = environ.Env()
 environ.Env.read_env()
 
 urlpatterns = [
-  # path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-  # path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
   path('user/create', views.userCreate, name="register"),
-  path('getInfo', views.getAllInfo, name="Info_all"),
-  path('getInfo/<str:username>', views.getInfo, name="Info"),
+  path('student/register/<str:username>', views.studentRegistration),
+  path('getInfo/allUser', views.getAllInfo, name="Info_all"),
+  path('details/<str:username>', views.getInfo, name="Info"),
   path('delete/<str:username>', views.deleteInfo, name="delete"),
   path('update/<str:username>', views.updateInfo, name="update"),
   path('login', views.login),
   path('hello', views.hello),
-  path('student/<str:username>', views.student),
-  path('manualPayment/<str:username>', paymentviews.manualPayment),
-  path('details/<str:username>', views.details),
+  path('transaction/<str:username>', paymentviews.transaction),
+  path('student/details/<str:username>', views.studentDetails),
   path('due/<str:username>', paymentviews.due),
   path('khalti', paymentviews.khaltiVerify),
-  # path('paymentDetails/<str:username>', paymentviews.paymentDetails),
-  path('bill/<str:username>', paymentviews.bill)
+  path('student/payment/details/<str:username>', paymentviews.StudentPaymentDetails),
   
 ]+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

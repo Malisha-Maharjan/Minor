@@ -58,7 +58,7 @@ REST_FRAMEWORK = {
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'middleware.main.TokenMiddleware',
+    # 'middleware.main.TokenMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     "corsheaders.middleware.CorsMiddleware",
@@ -209,3 +209,14 @@ STATIC_ROOT =os.path.join(BASE_DIR, 'staticfiles')
 
 KHALTI_SECRET_KEY = "Key test_secret_key_7b0419b866204b34bbef1645e5197e95"
 KHALTI_VERIFY_URL = "https://khalti.com/api/v2/payment/verify/"
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'studentportal61@gmail.com'
+EMAIL_HOST_PASSWORD ='ufnlsqkiisjsroyj'
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+

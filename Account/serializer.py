@@ -10,25 +10,33 @@ class UserSerializer(serializers.ModelSerializer):
 class StudentSerializer(serializers.ModelSerializer):
   class Meta: 
     model = Student
-    fields = ['totalFee']
-
-class ManualPaymentSerializer(serializers.ModelSerializer):
-  class Meta:
-    model = Transaction
-    fields = ['transaction']
+    fields = ['faculty', 'batch', 'semester', 'totalFee']
 
 class StudentDetailsSerializer(serializers.ModelSerializer):
   student = StudentSerializer(many=True)
   class Meta:
     model = User
     fields = '__all__'
-# class ScholarshipSerializer(serializers.ModelSerializer):
-#   class Meta:
-#     model = Scholarship
-#     fields = '__all__'
+
+class TransactionSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = Transaction 
+    fields = ['type', 'amount']
 
 
-# class PaymentSerializer(serializers.ModelSerializer):
-#   class Meta:
-#     model = Payment
-#     fields = ('payment')
+
+class StudentTransactionSerializer(serializers.ModelSerializer):
+  # user = UserSerializer(many=True)
+  # student = StudentSerializer(many=True)
+  # user =  UserSerializer()
+  transaction = TransactionSerializer(many=True)
+  class Meta:
+    model = Student
+    fields = ['faculty', 'batch', 'semester', 'totalFee', 'transaction']
+
+class UserStudentTransactionSerializer(serializers.ModelSerializer):
+  # transaction = StudentTransactionSerializer(many=True)
+  student = StudentTransactionSerializer(many=True)
+  class Meta:
+    model = User
+    fields = '__all__'
