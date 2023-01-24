@@ -15,23 +15,24 @@ class User(models.Model):
   lastName = models.CharField(max_length=100)
   password = models.CharField(max_length=100)
   role = models.IntegerField()
-  email = models.EmailField(default='malishamaharjan00@gmail.com')
+  email = models.EmailField(null=True)
+  faculty = models.CharField(max_length=5, null=True)
+  batch = models.CharField(max_length=5, null=True)
+  totalFee = models.FloatField(null=True)
+  semester = models.IntegerField(null=True)
 
   def __str__(self):
     return f'{self.userName} has role{self.role}'
   
-class Student(models.Model):
-  student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="student")
-  faculty = models.CharField(max_length=5)
-  batch = models.CharField(max_length=5)
-  semester = models.IntegerField()
-  totalFee = models.FloatField()
-  
 # # # payment model
+class Semester(models.Model):
+  student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="student")
+  std_semester = models.IntegerField()
+  is_active = models.BooleanField(default=True)
 class Transaction(models.Model):
-  transaction = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="transaction")
-  type = models.IntegerField(null=True, default=TransactionsTypes.PAYMENT)
-  amount = models.FloatField(null=True, default=0)
+  transaction = models.ForeignKey(Semester, on_delete=models.CASCADE, related_name="transaction")
+  type = models.IntegerField(null=True)
+  amount = models.FloatField(null=True)
 
 # f'select * from User where role = {Roles.STUDENT}
 #query ma garni minus

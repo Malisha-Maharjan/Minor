@@ -7,23 +7,11 @@ class UserSerializer(serializers.ModelSerializer):
     model = User
     fields = '__all__'
 
-class StudentSerializer(serializers.ModelSerializer):
-  class Meta: 
-    model = Student
-    fields = ['faculty', 'batch', 'semester', 'totalFee']
-
-class StudentDetailsSerializer(serializers.ModelSerializer):
-  student = StudentSerializer(many=True)
-  class Meta:
-    model = User
-    fields = '__all__'
 
 class TransactionSerializer(serializers.ModelSerializer):
   class Meta:
     model = Transaction 
     fields = ['type', 'amount']
-
-
 
 class StudentTransactionSerializer(serializers.ModelSerializer):
   # user = UserSerializer(many=True)
@@ -31,8 +19,8 @@ class StudentTransactionSerializer(serializers.ModelSerializer):
   # user =  UserSerializer()
   transaction = TransactionSerializer(many=True)
   class Meta:
-    model = Student
-    fields = ['faculty', 'batch', 'semester', 'totalFee', 'transaction']
+    model = Semester
+    fields = ['std_semester', 'transaction']
 
 class UserStudentTransactionSerializer(serializers.ModelSerializer):
   # transaction = StudentTransactionSerializer(many=True)

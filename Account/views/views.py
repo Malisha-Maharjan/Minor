@@ -28,15 +28,17 @@ def userCreate(request):
   message=""
   userSerializer = UserSerializer(data=request.data)
   if userSerializer.is_valid():
-    user = User(
-      userName=userSerializer.data['userName'],
-      firstName=userSerializer.data['firstName'],
-      lastName=userSerializer.data['lastName'],
-      password=userSerializer.data['password'],
-      role=userSerializer.data['role']
-    ) 
-    user.save()
+    userSerializer.save()
+    user = User.objects.get(userName=userSerializer.data['userName'])
     message = "true"
+    logger.warning(user.semester)
+    if user.semester is not None:
+      semester = Semester(
+        student = user,
+        std_semester = user.semester
+      )
+      logger.warning('hi i am semester')
+      semester.save()
     return Response(message, status=status.HTTP_200_OK)
   message = "false"
   return Response(message, status=status.HTTP_400_BAD_REQUEST)
@@ -94,43 +96,23 @@ def login(request):
   except Exception as e:
     return Response('false', status=status.HTTP_401_UNAUTHORIZED)
 
-@api_view(['POST'])
-@authentication_classes([])
-@permission_classes([])
-def studentRegistration(request, username):
-  logger.warning('fee')
-  user = User.objects.get(userName=username)
-  serializer = StudentSerializer(data=request.data)  
-  if serializer.is_valid():
-    logger.warning(serializer.data)
-    student = Student(
-      student=user,
-      faculty = serializer.data['faculty'],
-      batch = serializer.data['batch'],
-      semester = serializer.data['semester'],
-      totalFee = serializer.data['totalFee'],
-    )
-    student.save()
-    return Response('true', status=status.HTTP_200_OK)
-  return Response('false', status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['GET'])
-@authentication_classes([])
-@permission_classes([])
-def hello(request):
-  logger.warning('hhhh')
-  message = {'message': 'hello'}
+# @api_view(['GET'])
+# @authentication_classes([])
+# @permission_classes([])
+# def hello(request):
+#   logger.warning('hhhh')
+#   message = {'message': 'hello'}
   
-  return Response(message)
+#   return Response(message)
 
-@api_view(['GET'])
-def studentDetails(request, username):
-  logger.warning('details api')
-  user = User.objects.get(userName = username)
-  # student = Student.objects.get(student__userName=username)
-  StudentSerializer = StudentDetailsSerializer(user)
-  logger.warning(StudentSerializer.data)
-  return Response(StudentSerializer.data)
+# @api_view(['GET'])
+# def studentDetails(request, username):
+#   logger.warning('details api')
+#   user = User.objects.get(userName = username)
+#   # student = Student.objects.get(student__userName=username)
+#   StudentSerializer = StudentDetailsSerializer(user)
+#   logger.warning(StudentSerializer.data)
+#   return Response(StudentSerializer.data)
 
 
 

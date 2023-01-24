@@ -13,17 +13,17 @@ environ.Env.read_env()
 
 urlpatterns = [
   path('user/create', views.userCreate, name="register"),
-  path('student/register/<str:username>', views.studentRegistration),
   path('getInfo/allUser', views.getAllInfo, name="Info_all"),
   path('details/<str:username>', views.getInfo, name="Info"),
   path('delete/<str:username>', views.deleteInfo, name="delete"),
   path('update/<str:username>', views.updateInfo, name="update"),
   path('login', views.login),
-  path('hello', views.hello),
+  # path('hello', views.hello),
   path('transaction/<str:username>', paymentviews.transaction),
-  path('student/details/<str:username>', views.studentDetails),
+  # path('student/details/<str:username>', views.studentDetails),
   path('due/<str:username>', paymentviews.due),
-  path('khalti', paymentviews.khaltiVerify),
+  # path('khalti', paymentviews.khaltiVerify),
   path('student/payment/details/<str:username>', paymentviews.StudentPaymentDetails),
-  
+  path('bulk', paymentviews.bulkBillAdd),
+  path('upgrade/semester', paymentviews.upgradeSemester)
 ]+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
