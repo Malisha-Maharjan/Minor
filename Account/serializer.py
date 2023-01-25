@@ -28,3 +28,8 @@ class UserStudentTransactionSerializer(serializers.ModelSerializer):
   class Meta:
     model = User
     fields = '__all__'
+
+class ImageSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = imageModel
+    fields = '__all__'

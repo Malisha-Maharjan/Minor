@@ -25,6 +25,7 @@ def transaction(request, username):
   try:
     student = Semester.objects.get(student__userName=username, is_active=True)
     serializer = TransactionSerializer(data=request.data)
+    email = []
     if serializer.is_valid():
       logger.warning('hi payment')
       transaction = Transaction(
@@ -32,7 +33,8 @@ def transaction(request, username):
         type = serializer.data['type'],
         amount = serializer.data['amount'])
       transaction.save()
-      sendEmail(student.student)
+      email.append(student.student.email)
+      sendEmail(email)
       message={}
       if transaction.type == 1:
         message={"message": "Bill is added"}
@@ -45,31 +47,46 @@ def transaction(request, username):
     
   return Response(message, status=status.HTTP_400_BAD_REQUEST)
 
-# @api_view(['POST'])
-# @authentication_classes([])
-# @permission_classes([])
-# def khaltiVerify(request):
-#   data = json.loads(request.body) 
-#   url = KHALTI_VERIFY_URL
-#   payload = {
-#     'token': data['token'],
-#     'amount': data['amount']
-#   }
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
+def khaltiVerify(request):
+  data = json.loads(request.body) 
+  url = KHALTI_VERIFY_URL
+  payload = {
+    'token': data['token'],
+    'amount': data['amount']
+  }
+  username = data['userName']
 
-#   logger.warning(payload)
-#   headers = {
-#     'Authorization': KHALTI_SECRET_KEY
-#   }
-#   response = requests.request("POST", url, headers=headers, data=payload)
-#   if response == 200:
-#     logger.warning(response)
-#   return Response()
+  logger.warning(payload)
+  headers = {
+    'Authorization': KHALTI_SECRET_KEY
+  }
+  response = requests.request("POST", url, headers=headers, data=payload)
+  logger.warning(response)
+  logger.warning(response.status_code)
+  email=[]
+  if response.status_code == 200:
+    student = Semester.objects.get(student__userName=username, is_active=True)
+    transaction = Transaction(
+        transaction = student,
+        type = 2,
+        amount = data['amount']/1000)
+    transaction.save()
+    email.append(student.student.email)
+    sendEmail(email)
+    message={'message': 'Bill paid via Khalti'}
+    return Response(message, status=status.HTTP_200_OK)
+  message = {'message': 'Invalid data'}   
+  return Response(message, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 def due(request, username):
   bill = Transaction.objects.filter(transaction__student__userName=username, type=1).aggregate(bill_sum=Sum('amount'))
+  scholarship = Transaction.objects.filter(transaction__student__userName=username, type=3).aggregate(scholarship_sum=Sum('amount'))
   paid = Transaction.objects.filter(transaction__student__userName=username, type=2).aggregate(paid_sum=Sum('amount'))
-  due = bill['bill_sum'] - paid['paid_sum']
+  due = bill['bill_sum'] - paid['paid_sum'] + scholarship['scholarship_sum']
   message={'due': due}
   return Response(message)
 
@@ -88,19 +105,22 @@ def StudentPaymentDetails(request, username):
 def upgradeSemester(request):
   data = json.loads(request.body)
   batch = data['batch']
-  students = Semester.objects.filter(student__batch=batch, is_active=True)
+  faculty = data['faculty']
+  students = Semester.objects.filter(student__batch=batch, is_active=True, student__faculty=faculty)
+  semester=[]
   for student in students:
     student.is_active = False
     student.save()
-    semester = Semester(
+    semester.append(Semester(
       student = student.student,
       std_semester = student.student.semester + 1
-    )
-    semester.save()
+    ))
+     
     user=User.objects.get(userName=student.student.userName)
     user.semester = student.student.semester + 1
     user.save()
     logger.warning(semester)
+  Semester.objects.bulk_create(semester)
   return Response("ok")
 
 @api_view(['POST'])
@@ -108,16 +128,20 @@ def bulkBillAdd(request):
   data = json.loads(request.body)
   batch = data['batch']
   amount = data['amount']
-  students = Semester.objects.filter(student__batch=batch, is_active=True)
-  logger.warning(students)
+  faculty = data['faculty']
+  students = Semester.objects.filter(student__batch=batch, is_active=True, student__faculty=faculty)
+  transaction=[]
+  email=[]
   for student in students:
-    transaction = Transaction(
+    transaction.append(Transaction(
       transaction = student,
       type=1,
       amount = amount
-    )
-    sendEmail(student.student)
-    transaction.save()
+    ))
+    email.append(student.student.email)
+    # sendEmail(student.student)
+  sendEmail(email)
+  # Transaction.objects.bulk_create(transaction)
   return Response("ok")
 
 

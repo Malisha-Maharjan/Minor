@@ -23,6 +23,9 @@ class TokenMiddleware:
       return response
 
     token = request.headers.get('Authorization')
+    logger.warning('token')
+    logger.warning(token)
+    logger.warning('token')
     try:
       token = request.headers.get('Authorization').split()
       logger.warning(token)

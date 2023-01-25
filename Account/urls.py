@@ -22,8 +22,10 @@ urlpatterns = [
   path('transaction/<str:username>', paymentviews.transaction),
   # path('student/details/<str:username>', views.studentDetails),
   path('due/<str:username>', paymentviews.due),
-  # path('khalti', paymentviews.khaltiVerify),
+  path('khalti', paymentviews.khaltiVerify),
   path('student/payment/details/<str:username>', paymentviews.StudentPaymentDetails),
   path('bulk', paymentviews.bulkBillAdd),
-  path('upgrade/semester', paymentviews.upgradeSemester)
+  path('upgrade/semester', paymentviews.upgradeSemester),
+  path('image', views.imageUpload),
+  path('image/view', views.imageSend)
 ]+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

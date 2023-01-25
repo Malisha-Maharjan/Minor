@@ -9,6 +9,7 @@ class Roles(object):
 class TransactionsTypes(object):
   BILL = 1
   PAYMENT = 2
+  SCHOLARSHIP = 3
 class User(models.Model):
   userName = models.CharField(max_length=100, unique=True)
   firstName = models.CharField(max_length=100)
@@ -33,9 +34,13 @@ class Transaction(models.Model):
   transaction = models.ForeignKey(Semester, on_delete=models.CASCADE, related_name="transaction")
   type = models.IntegerField(null=True)
   amount = models.FloatField(null=True)
+  date = models.DateTimeField(auto_now_add=True)
 
 # f'select * from User where role = {Roles.STUDENT}
 #query ma garni minus
 
 # class Image(models.Model):
 #   image = models.ImageField(upload_to=,)
+
+class imageModel(models.Model):
+  image = models.ImageField(upload_to='images',null=False, blank=False)
