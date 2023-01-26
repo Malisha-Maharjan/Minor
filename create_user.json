@@ -1,0 +1,35 @@
+[
+  {
+    "userName": "admin",
+    "firstName": "admin",
+    "lastName": "admin",
+    "password": "admin",
+    "role": 1,
+    "email": null,
+    "faculty": null,
+    "batch": null,
+    "semester": null
+  },
+  {
+    "userName": "test1",
+    "firstName": "test1",
+    "lastName": "test1",
+    "password": "12345",
+    "role": 3,
+    "email": "jeshika99@gmail.com",
+    "faculty": "BCT",
+    "batch": "2076",
+    "semester": 6
+  },
+  {
+    "userName": "test2",
+    "firstName": "test2",
+    "lastName": "test2",
+    "password": "12345",
+    "role": 3,
+    "email": "jeshika99@gmail.com",
+    "faculty": "BCT",
+    "batch": "2076",
+    "semester": 6
+  }
+]

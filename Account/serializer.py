@@ -13,23 +13,30 @@ class TransactionSerializer(serializers.ModelSerializer):
     model = Transaction 
     fields = ['type', 'amount']
 
-class StudentTransactionSerializer(serializers.ModelSerializer):
-  # user = UserSerializer(many=True)
-  # student = StudentSerializer(many=True)
-  # user =  UserSerializer()
-  transaction = TransactionSerializer(many=True)
+
+class TransactionDetailSerializer(serializers.ModelSerializer):
   class Meta:
-    model = Semester
-    fields = ['std_semester', 'transaction']
+    model = Transaction 
+    fields = ['type', 'amount', 'semester']
 
 class UserStudentTransactionSerializer(serializers.ModelSerializer):
-  # transaction = StudentTransactionSerializer(many=True)
-  student = StudentTransactionSerializer(many=True)
+  transaction = TransactionDetailSerializer(many=True)
   class Meta:
     model = User
-    fields = '__all__'
+    fields = ['userName', 'firstName', 'lastName', 'faculty', 'batch', 'transaction']
 
-class ImageSerializer(serializers.ModelSerializer):
-  class Meta:
-    model = imageModel
-    fields = '__all__'
+
+# class ImageSerializer(serializers.ModelSerializer):
+#   class Meta:
+#     model = imageModel
+#     fields = '__all__'
+
+# class FirstSemesterSerializer(serializers.ModelSerializer):
+#   class Meta:
+#     model = FirstSemester
+#     fields = ['mathematicsI','computer_Programming', 'engineering_DrawingI','engineering_Physics', 'applied_Mechanics', 'basic_Electrical_Engineering', 'total_Marks','percentage']
+
+# class SecondSemesterSerializer(serializers.ModelSerializer):
+#   class Meta:
+#     model = FirstSemester
+#     fields = ['mathematicsII', 'engineering_DrawingII', 'basic_Electronics_Engineering', 'engineering_Chemistry', 'thermodynamics', 'workshop', 'total_Marks', 'percentage']

@@ -10,6 +10,10 @@ class TransactionsTypes(object):
   BILL = 1
   PAYMENT = 2
   SCHOLARSHIP = 3
+
+class Semester(models.Model):
+  name = models.CharField(max_length=10)
+
 class User(models.Model):
   userName = models.CharField(max_length=100, unique=True)
   firstName = models.CharField(max_length=100)
@@ -19,19 +23,16 @@ class User(models.Model):
   email = models.EmailField(null=True)
   faculty = models.CharField(max_length=5, null=True)
   batch = models.CharField(max_length=5, null=True)
-  totalFee = models.FloatField(null=True)
-  semester = models.IntegerField(null=True)
+  semester = models.ForeignKey(Semester, null=True, on_delete=models.DO_NOTHING)
 
   def __str__(self):
     return f'{self.userName} has role{self.role}'
   
-# # # payment model
-class Semester(models.Model):
-  student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="student")
-  std_semester = models.IntegerField()
-  is_active = models.BooleanField(default=True)
+# # # payment mod
+
 class Transaction(models.Model):
-  transaction = models.ForeignKey(Semester, on_delete=models.CASCADE, related_name="transaction")
+  user = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name="transaction")
+  semester = models.ForeignKey(Semester, null=True, on_delete=models.DO_NOTHING)
   type = models.IntegerField(null=True)
   amount = models.FloatField(null=True)
   date = models.DateTimeField(auto_now_add=True)
@@ -41,6 +42,15 @@ class Transaction(models.Model):
 
 # class Image(models.Model):
 #   image = models.ImageField(upload_to=,)
+# class Faculty(models.Model):
+#   faculty = models.CharField(max_length=5, null=True)
 
+
+
+# class Result(models.Model):
+#   student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="result")
+#   result_semester = models.ForeignKey(Semester, on_delete=models.CASCADE, related_name='result_semester')
+#   subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="std_subject")
+#   marks = models.FloatField()
 class imageModel(models.Model):
   image = models.ImageField(upload_to='images',null=False, blank=False)
