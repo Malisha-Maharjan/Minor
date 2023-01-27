@@ -25,15 +25,39 @@ cursor=connection.cursor()
 @authentication_classes([])
 @permission_classes([])
 def userCreate(request):
-  message=""
-  userSerializer = UserSerializer(data=request.data)
-  if userSerializer.is_valid():
-    userSerializer.save()
-    user = User.objects.get(userName=userSerializer.data['userName'])
-    message = {"message": "true"}
-    return Response(message, status=status.HTTP_200_OK)
+  try:
+    message=""
+    userSerializer = UserSerializer(data=request.data)
+    if userSerializer.is_valid():
+      userSerializer.save()
+      message = {"message": "true"}
+      return Response(message, status=status.HTTP_200_OK)
+  except Exception as e:
+    logger.warning(e)
+    return Response("exception")
   message = {"message": "false"}
   return Response(message, status=status.HTTP_400_BAD_REQUEST)
+
+  # data = json.loads(request.body)
+  # try:
+  #   user = User(
+  #   firstName = data['firstName'],
+  #   userName = data['userName'],
+  #   lastName = data['lastName'],
+  #   password = data['password'],
+  #   role = data['role'],
+  #   address = data['address'],
+  #   contact_no = data['contact_no'],
+  #   email = data['email'],
+  #   batch = data['batch'],
+  #   faculty = Faculty.objects.get(pk=data['faculty']),
+  #   semester = Semester.objects.get(pk=data['semester']))
+  #   user.save()
+  #   return Response("ok", status=status.HTTP_200_OK)
+  # except Exception as e:
+  #   logger.warning(e)
+  #   return Response("exception", status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET'])
 @authentication_classes([])
@@ -50,7 +74,11 @@ def getAllInfo(request):
 @authentication_classes([])
 @permission_classes([])
 def getInfo(request, username):
-  student = User.objects.get(userName=username)
+  try:
+    student = User.objects.get(userName=username)
+  except Exception as e:
+    error = {"error": str(e)}
+    return Response(error, status=status.HTTP_404_NOT_FOUND)
   serializer = UserSerializer(student)
   return Response(serializer.data)
 
@@ -58,7 +86,11 @@ def getInfo(request, username):
 @authentication_classes([])
 @permission_classes([])
 def updateInfo(request, username):
-  user = User.objects.get(userName=username)
+  try:
+    user = User.objects.get(userName=username)
+  except Exception as e:
+    error = {"error": str(e)}
+    return Response(error, status=status.HTTP_404_NOT_FOUND)
   logger.warning(user)
   serializer = UserSerializer(user, data=request.data, partial=True)
   if serializer.is_valid():
@@ -70,7 +102,11 @@ def updateInfo(request, username):
 @authentication_classes([])
 @permission_classes([])
 def deleteInfo(request, username):
-  user = User.objects.get(userName=username)
+  try:
+    user = User.objects.get(userName=username)
+  except Exception as e:
+    error = {"error": str(e)}
+    return Response(error, status=status.HTTP_404_NOT_FOUND)
   user.delete()
   return Response("true", status=status.HTTP_200_OK)
 
@@ -108,17 +144,23 @@ def login(request):
 #   return Response(StudentSerializer.data)
 
 
-# @api_view(['POST'])
-# def imageUpload(request):
-
-#   serializer = ImageSerializer(data=request.data)
-#   try:
-#     if serializer.is_valid():
-#       serializer.save()
-#   except Exception as e:
-#     logger.warning(e)
-#     return Response('exception')
-#   return Response('ok')
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
+def imageUpload(request):
+  logger.warning('image upload')
+  logger.warning(request.data)
+  try:
+    serializer = ImageSerializer(data=request.data)
+    if serializer.is_valid():
+      # logger.warning(serializer.data)
+      serializer.save()
+    else:
+      logger.warning('invalid data')
+  except Exception as e:
+    logger.warning(e)
+    return Response('exception')
+  return Response('ok')
 
 
 # import base64

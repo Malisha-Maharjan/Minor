@@ -2,6 +2,17 @@ from Account.models import *
 from rest_framework import serializers
 
 
+class SemesterSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = Semester
+    fields = '__all__'
+
+class FacultySerializer(serializers.ModelSerializer):
+  class Meta:
+    model =  Faculty
+    fields = '__all__'
+
+
 class UserSerializer(serializers.ModelSerializer):
   class Meta: 
     model = User
@@ -15,6 +26,7 @@ class TransactionSerializer(serializers.ModelSerializer):
 
 
 class TransactionDetailSerializer(serializers.ModelSerializer):
+  semester = SemesterSerializer()
   class Meta:
     model = Transaction 
     fields = ['type', 'amount', 'semester']
@@ -25,18 +37,29 @@ class UserStudentTransactionSerializer(serializers.ModelSerializer):
     model = User
     fields = ['userName', 'firstName', 'lastName', 'faculty', 'batch', 'transaction']
 
+class SubjectSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = Subject
+    fields = '__all__'
 
-# class ImageSerializer(serializers.ModelSerializer):
-#   class Meta:
-#     model = imageModel
-#     fields = '__all__'
+class MarksSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = Marks
+    fields = ['marks', 'subject']
 
-# class FirstSemesterSerializer(serializers.ModelSerializer):
+# class ResultSerializer(serializers.ModelSerializer):
+#   student_mark = MarksSerializer(many=True)
 #   class Meta:
-#     model = FirstSemester
-#     fields = ['mathematicsI','computer_Programming', 'engineering_DrawingI','engineering_Physics', 'applied_Mechanics', 'basic_Electrical_Engineering', 'total_Marks','percentage']
+#     model = Marks
+#     fields = ['userName', 'student_mark']
 
-# class SecondSemesterSerializer(serializers.ModelSerializer):
+# class SemesterMarksSerializer(serializers.ModelSerializer):
+#   student_mark = MA
 #   class Meta:
-#     model = FirstSemester
-#     fields = ['mathematicsII', 'engineering_DrawingII', 'basic_Electronics_Engineering', 'engineering_Chemistry', 'thermodynamics', 'workshop', 'total_Marks', 'percentage']
+
+
+class ImageSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = imageModel
+    fields = '__all__'
+

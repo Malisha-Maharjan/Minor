@@ -30,11 +30,12 @@ def transaction(request, username):
       transaction = Transaction(
         user = student,
         semester = student.semester,
+        faculty = student.faculty,
         type = serializer.data['type'],
         amount = serializer.data['amount'])
       transaction.save()
       email.append(student.email)
-      sendEmail(email)
+      # sendEmail(email)
       message={}
       if transaction.type == 1:
         message={"message": "Bill is added"}
@@ -43,19 +44,21 @@ def transaction(request, username):
       return Response(message, status=status.HTTP_200_OK)
   except Exception as e:
     logger.warning(e)
-    return Response('exception')
-  return Response(message, status=status.HTTP_400_BAD_REQUEST)
+    error = {"error": str(e)}
+    return Response(error, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['POST'])
 @authentication_classes([])
 @permission_classes([])
 def khaltiVerify(request):
   data = json.loads(request.body) 
+  logger.warning('khalti payment')
   url = KHALTI_VERIFY_URL
   payload = {
     'token': data['token'],
     'amount': data['amount']
   }
+  logger.warning(data)
   username = data['userName']
 
   logger.warning(payload)
@@ -67,12 +70,15 @@ def khaltiVerify(request):
   logger.warning(response.status_code)
   email=[]
   if response.status_code == 200:
-    student = User.objects.get(student__userName=username, is_active=True)
+    logger.warning('inside ok')
+    student = User.objects.get(userName=username)
+    logger.warning(student)
     transaction = Transaction(
         user = student,
         type = 2,
-        amount = data['amount']/1000,
-        semester = student.semester)
+        amount = data['amount']/100,
+        semester = student.semester,
+        faculty = student.faculty)
     transaction.save()
     email.append(student.email)
     sendEmail(email)
@@ -83,9 +89,13 @@ def khaltiVerify(request):
 
 @api_view(['GET'])
 def due(request, username):
-  bill = Transaction.objects.filter(user__userName=username, type=1).aggregate(bill_sum=Sum('amount'))
-  paid = Transaction.objects.filter(user__userName=username, type=2).aggregate(paid_sum=Sum('amount'))
-  scholarship = Transaction.objects.filter(user__userName=username, type=3).aggregate(scholarship_sum=Sum('amount'))
+  try:
+    bill = Transaction.objects.filter(user__userName=username, type=1).aggregate(bill_sum=Sum('amount'))
+    paid = Transaction.objects.filter(user__userName=username, type=2).aggregate(paid_sum=Sum('amount'))
+    scholarship = Transaction.objects.filter(user__userName=username, type=3).aggregate(scholarship_sum=Sum('amount'))
+  except Exception as e:
+    error = {"error": str(e)}
+    return Response(error, status=status.HTTP_404_NOT_FOUND)
   if scholarship['scholarship_sum'] == None:
     scholarship['scholarship_sum'] = 0 
   due = bill['bill_sum'] - paid['paid_sum'] + scholarship['scholarship_sum']
@@ -94,14 +104,14 @@ def due(request, username):
 
 @api_view(['GET'])
 def StudentPaymentDetails(request, username):
-  user = User.objects.get(userName=username)
-  serializer = UserStudentTransactionSerializer(user)
   try :
+    user = User.objects.get(userName=username)
+    serializer = UserStudentTransactionSerializer(user)
     logger.warning(serializer.data)
     return Response(serializer.data)
   except Exception as e:
-    logger.warning(e)
-    return Response('exception')
+    error = {"error": str(e)}
+    return Response(error, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['POST'])
 def upgradeSemester(request):
@@ -123,22 +133,27 @@ def upgradeSemester(request):
 
 @api_view(['POST'])
 def bulkBillAdd(request):
-  data = json.loads(request.body)
-  batch = data['batch']
-  amount = data['amount']
-  faculty = data['faculty']
-  students = User.objects.filter(batch=batch, faculty=faculty)
-  transaction=[]
-  email=[]
-  for student in students:
-    transaction.append(Transaction(
-      user = student,
-      type = 1,
-      amount = amount,
-      semester = student.semester
-    ))
-    email.append(student.email)
-    # sendEmail(student.student)
+  try: 
+    data = json.loads(request.body)
+    batch = data['batch']
+    amount = data['amount']
+    faculty = data['faculty']
+    students = User.objects.filter(batch=batch, faculty=faculty)
+    transaction=[]
+    email=[]
+    for student in students:
+      transaction.append(Transaction(
+        user = student,
+        type = 1,
+        amount = amount,
+        semester = student.semester,
+        faculty = student.faculty
+      ))
+      email.append(student.email)
+      # sendEmail(student.student)
+  except Exception as e:
+    logger.warning(e)
+    return Response("exception")
   # sendEmail(email)
   Transaction.objects.bulk_create(transaction)
   return Response("ok")
