@@ -7,6 +7,7 @@ from rest_framework.decorators import (authentication_classes,
                                        permission_classes)
 from rest_framework.response import Response
 
+from Account.models import *
 from backend.settings import SIMPLE_JWT
 
 logger = logging.getLogger(__name__)
@@ -35,11 +36,21 @@ class TokenMiddleware:
         algorithms=[SIMPLE_JWT['ALGORITHM']])
       logger.warning(payload)
 
-      if request.path == '/api/user/create' and payload['role'] != 1:
+      if request.path == '/api/user/create' and payload['role'] != Roles.ADMIN:
         message = {'message': "Unauthorized access"}
         return HttpResponse(str(message), status=status.HTTP_401_UNAUTHORIZED)
+      
+      if request.path.startswith('/api/password/update') and payload['role'] != Roles.STUDENT:
+        message = {'message': "Unauthorized access"}
+        return HttpResponse(str(message), status=status.HTTP_401_UNAUTHORIZED)
+
+      if request.path.startswith('/api/user/update') and payload['role'] == Roles.STUDENT:
+        message = {'message': "Unauthorized access"}
+        return HttpResponse(str(message), status=status.HTTP_401_UNAUTHORIZED)
+
       logger.warning('valid token')
       response = self.get_response(request) 
+      logger.warning(request.path)
       return response
     # token is valid
     except Exception as e:

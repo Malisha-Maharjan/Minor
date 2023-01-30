@@ -22,13 +22,47 @@ logger = logging.getLogger(__name__)
 
 
 @api_view(['GET'])
+@authentication_classes([])
+@permission_classes([])
 def getFaculty(request):
   faculty = Faculty.objects.all()
   serializer = FacultySerializer(faculty, many=True)
   return Response(serializer.data)
 
 @api_view(['GET'])
+@authentication_classes([])
+@permission_classes([])
 def getSemesters(request):
   semester = Semester.objects.all()
   serializer = SemesterSerializer(semester, many=True)
   return Response(serializer.data)
+
+
+
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
+def mark(request):
+  marks = json.loads(request.body)
+  logger.warning('marks')
+  for mark in marks:
+    logger.warning(mark)
+  return Response('ok')
+  # try: 
+  #   student = User.objects.get(userName=username)
+  #   semester = Semester.objects.get(pk=marks['semester'])
+  #   subject = Subject.objects.get(pk=marks['subject'], semester__pk=marks['semester'])
+  #   result = Marks(
+  #     student = student,
+  #     semester = semester,
+  #     subject = subject,
+  #     marks = marks['marks']
+  #   )
+  #   logger.warning(result)
+  #   result.save()
+  #   return Response("ok")
+  # except Exception as e:
+  #   logger.warning(e)
+  #   error = {"error": str(e)}
+  #   return Response(error, status=status.HTTP_400_BAD_REQUEST)
+

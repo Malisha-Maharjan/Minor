@@ -3,6 +3,7 @@ import logging
 
 # from rest_framework_simplejwt.utils import 
 import jwt
+from django.contrib.auth.hashers import check_password, make_password
 from django.db import connection
 from django.http import HttpResponse
 from rest_framework import status
@@ -27,7 +28,10 @@ cursor=connection.cursor()
 def userCreate(request):
   try:
     message=""
-    userSerializer = UserSerializer(data=request.data)
+    data = json.loads(request.body)
+    data['password'] = make_password(data['password'])
+    userSerializer = UserSerializer(data=data)
+    logger.warning(request.data)
     if userSerializer.is_valid():
       userSerializer.save()
       message = {"message": "true"}
@@ -44,7 +48,7 @@ def userCreate(request):
   #   firstName = data['firstName'],
   #   userName = data['userName'],
   #   lastName = data['lastName'],
-  #   password = data['password'],
+  #   password = make_password(data['password']),
   #   role = data['role'],
   #   address = data['address'],
   #   contact_no = data['contact_no'],
@@ -95,35 +99,46 @@ def updateInfo(request, username):
   serializer = UserSerializer(user, data=request.data, partial=True)
   if serializer.is_valid():
     serializer.save()
-    return Response("true", status=status.HTTP_200_OK)
+    user = User.objects.get(userName = username)
+    serializer = UserSerializer(user)
+    return Response(serializer.data, status=status.HTTP_200_OK)
   return Response("false", status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['DELETE'])
 @authentication_classes([])
 @permission_classes([])
 def deleteInfo(request, username):
+  logger.warning('hihihih')
   try:
     user = User.objects.get(userName=username)
+    logger.warning(user)
   except Exception as e:
     error = {"error": str(e)}
     return Response(error, status=status.HTTP_404_NOT_FOUND)
+  logger.warning(user)
   user.delete()
+  logger.warning('deleted')
   return Response("true", status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 def login(request):
   data = json.loads(request.body)
   username = data['userName']
-  password = data['password']
-  try:
-    user = User.objects.get(userName = username, password = password)
-    access = AccessToken.for_user(user)
-    access['role'] = user.role
-    access['username'] = user.userName
-    data = {'access': str(access)}
-    return Response(data, status=status.HTTP_200_OK)
-  except Exception as e:
-    return Response('false', status=status.HTTP_401_UNAUTHORIZED)
+  encrypted_password=make_password(data['password'])
+  check_password=check_password(data['password'], encrypted_password)
+  if check_password: 
+    try:
+      user = User.objects.get(userName = username)
+      access = AccessToken.for_user(user)
+      access['role'] = user.role
+      access['username'] = user.userName
+      roleNames = ["Admin", "Account Staff", "Entry Staff", "Student"] 
+      data = {'access': str(access), 'role': user.role, 'roleName': roleNames[user.role - 1], 'username': user.userName, 'user_id': user.pk}
+
+      return Response(data, status=status.HTTP_200_OK)
+    except Exception as e:
+      return Response('false',  status=status.HTTP_404_NOT_FOUND)
+  return Response('false', status=status.HTTP_401_UNAUTHORIZED)
 
 # @api_view(['GET'])
 # @authentication_classes([])
@@ -178,3 +193,16 @@ def imageUpload(request):
 #   # serializer = ImageSerializer(images)
 #   message = {'image': encoded_string}
 #   return Response(message)
+
+
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
+def updatePassword(request, username):
+  data = json.loads(request.body)
+  logger.warning(request.data)
+  user = User.objects.get(userName=username)
+  logger.warning(user)
+  user.password = data['password']
+  user.save(update_fields=["password"])
+  return Response("password changed", status=status.HTTP_200_OK)

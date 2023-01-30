@@ -3,8 +3,9 @@ from django.db import models
 
 class Roles(object):
   ADMIN = 1
-  STAFF = 2
-  STUDENT = 3
+  ACCOUNT_STAFF = 2
+  ENTRY_STAFF = 3
+  STUDENT = 4
 
 class TransactionsTypes(object):
   BILL = 1
@@ -22,20 +23,20 @@ class User(models.Model):
   lastName = models.CharField(max_length=100)
   password = models.CharField(max_length=100)
   role = models.IntegerField()
-  address = models.CharField(max_length = 100)
-  # image = models.ImageField(upload_to='images',null=False, blank=False)
-  image = models.TextField()
-  contact_no = models.CharField(max_length=10)
+  address = models.CharField(max_length = 100, null=True)
+  # image = models.ImageField(upload_to='images',null=True, blank=False)
+  image = models.TextField(null=True, blank=True)
+  contact_no = models.CharField(max_length=10, null=True, blank=True)
   email = models.EmailField(null=True)
-  faculty = models.ForeignKey(Faculty, null=True, on_delete=models.DO_NOTHING)
-  batch = models.CharField(max_length=5, null=True)
-  semester = models.ForeignKey(Semester, null=True, on_delete=models.DO_NOTHING)
+  faculty = models.ForeignKey(Faculty, null=True, on_delete=models.DO_NOTHING, blank=True)
+  batch = models.CharField(max_length=5, null=True, blank=True)
+  semester = models.ForeignKey(Semester, null=True, on_delete=models.DO_NOTHING, blank=True)
 
   def __str__(self):
     return f'{self.userName} has role{self.role}'
   
 class Transaction(models.Model):
-  user = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name="transaction")
+  user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="transaction")
   semester = models.ForeignKey(Semester, null=True, on_delete=models.DO_NOTHING, related_name="semester")
   faculty = models.ForeignKey(Faculty, on_delete=models.DO_NOTHING, related_name = "transaction_semester" )
   type = models.IntegerField(null=True)
