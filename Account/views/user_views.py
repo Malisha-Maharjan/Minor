@@ -96,6 +96,11 @@ def updateInfo(request, username):
     error = {"error": str(e)}
     return Response(error, status=status.HTTP_404_NOT_FOUND)
   logger.warning(user)
+  # data = json.loads(request.body)
+  # logger.warning(data['password'])
+  # encrypted_password=make_password(data['password'])
+  # if not check_password(user.password, encrypted_password):
+  #   data['password'] = make_password(data['password'])
   serializer = UserSerializer(user, data=request.data, partial=True)
   if serializer.is_valid():
     serializer.save()
@@ -123,22 +128,22 @@ def deleteInfo(request, username):
 @api_view(['POST'])
 def login(request):
   data = json.loads(request.body)
+  logger.warning(data)
   username = data['userName']
-  encrypted_password=make_password(data['password'])
-  check_password=check_password(data['password'], encrypted_password)
-  if check_password: 
-    try:
-      user = User.objects.get(userName = username)
-      access = AccessToken.for_user(user)
-      access['role'] = user.role
-      access['username'] = user.userName
-      roleNames = ["Admin", "Account Staff", "Entry Staff", "Student"] 
-      data = {'access': str(access), 'role': user.role, 'roleName': roleNames[user.role - 1], 'username': user.userName, 'user_id': user.pk}
-
-      return Response(data, status=status.HTTP_200_OK)
-    except Exception as e:
-      return Response('false',  status=status.HTTP_404_NOT_FOUND)
-  return Response('false', status=status.HTTP_401_UNAUTHORIZED)
+  try:
+    user = User.objects.get(userName = username)
+    if check_password(data['password'], user.password):
+        access = AccessToken.for_user(user)
+        access['role'] = user.role
+        access['username'] = user.userName
+        roleNames = ["Admin", "Account Staff", "Entry Staff", "Student"] 
+        data = {'access': str(access), 'role': user.role, 'roleName': roleNames[user.role - 1], 'username': user.userName, 'user_id': user.pk}
+        return Response(data, status=status.HTTP_200_OK)
+  except Exception as e:
+    message = {"error": "Invalid Username/password"}
+    return Response(message,  status=status.HTTP_404_NOT_FOUND)
+  message = {"error": "Invalid Username/password"}
+  return Response(message, status=status.HTTP_401_UNAUTHORIZED)
 
 # @api_view(['GET'])
 # @authentication_classes([])
@@ -157,25 +162,6 @@ def login(request):
 #   StudentSerializer = StudentDetailsSerializer(user)
 #   logger.warning(StudentSerializer.data)
 #   return Response(StudentSerializer.data)
-
-
-@api_view(['POST'])
-@authentication_classes([])
-@permission_classes([])
-def imageUpload(request):
-  logger.warning('image upload')
-  logger.warning(request.data)
-  try:
-    serializer = ImageSerializer(data=request.data)
-    if serializer.is_valid():
-      # logger.warning(serializer.data)
-      serializer.save()
-    else:
-      logger.warning('invalid data')
-  except Exception as e:
-    logger.warning(e)
-    return Response('exception')
-  return Response('ok')
 
 
 # import base64
@@ -203,6 +189,12 @@ def updatePassword(request, username):
   logger.warning(request.data)
   user = User.objects.get(userName=username)
   logger.warning(user)
-  user.password = data['password']
+  if not check_password(data['password'], user.password):
+    return Response("Old Password is incorrect")
+  if check_password(data['new_password'], user.password):
+    return Response("Same password")
+  if not data['new_password'] == data['confirm_password']:
+    return Response("confirm password not correct")
+  user.password = make_password(data['new_password'])
   user.save(update_fields=["password"])
   return Response("password changed", status=status.HTTP_200_OK)

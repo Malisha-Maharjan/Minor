@@ -36,12 +36,12 @@ urlpatterns = [
   path('transaction', payment_views.transaction),
   # # path('student/details/<str:username>', views.studentDetails),
   path('due/<str:username>', payment_views.due),
-  # path('khalti', paymentviews.khaltiVerify),
+  path('khalti', payment_views.khaltiVerify),
   path('student/payment/details/<str:username>', payment_views.StudentPaymentDetails),
   path('bulk', payment_views.bulkBillAdd),
   path('upgrade/semester', payment_views.upgradeSemester),
   path('mark', prefetch.mark),
-  path('image', user_views.imageUpload),
+  # path('image', user_views.imageUpload),
   # path('image/view', user_views.imageSend),
   # # path('subject', views.subject)
   # path('first_semester/result/<str:username>', resultviews.firstSemesterResult)

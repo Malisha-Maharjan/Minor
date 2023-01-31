@@ -102,6 +102,7 @@ def khaltiVerify(request):
 @permission_classes([])
 def due(request, username):
   try:
+    logger.warning(username)
     user = User.objects.get(userName=username)
   except Exception as e:
     error = {"error": str(e)}

@@ -44,9 +44,9 @@ class TokenMiddleware:
         message = {'message': "Unauthorized access"}
         return HttpResponse(str(message), status=status.HTTP_401_UNAUTHORIZED)
 
-      if request.path.startswith('/api/user/update') and payload['role'] == Roles.STUDENT:
-        message = {'message': "Unauthorized access"}
-        return HttpResponse(str(message), status=status.HTTP_401_UNAUTHORIZED)
+      # if request.path.startswith('/api/user/update') and payload['role'] == Roles.STUDENT:
+      #   message = {'message': "Unauthorized access"}
+      #   return HttpResponse(str(message), status=status.HTTP_401_UNAUTHORIZED)
 
       logger.warning('valid token')
       response = self.get_response(request) 
