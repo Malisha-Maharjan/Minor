@@ -20,6 +20,7 @@ class Faculty(models.Model):
 class User(models.Model):
   userName = models.CharField(max_length=100, unique=True)
   firstName = models.CharField(max_length=100)
+  middleName = models.CharField(max_length=100, null=True)
   lastName = models.CharField(max_length=100)
   password = models.CharField(max_length=100)
   role = models.IntegerField()

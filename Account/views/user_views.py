@@ -29,8 +29,8 @@ def userCreate(request):
   try:
     message=""
     data = json.loads(request.body)
-    data['password'] = make_password(data['password'])
-    userSerializer = UserSerializer(data=data)
+    request.data['password'] = make_password(request.data["password"])
+    userSerializer = UserSerializer(data=request.data)
     logger.warning(request.data)
     if userSerializer.is_valid():
       userSerializer.save()
@@ -68,7 +68,7 @@ def userCreate(request):
 @permission_classes([])
 def getAllInfo(request):
   logger.warning('getting info')
-  student = User.objects.all()
+  student = User.objects.filter(role=Roles.STUDENT)
   logger.warning('getting info')
   serializer = UserSerializer(student, many=True)
   logger.warning('getting info')
@@ -189,12 +189,12 @@ def updatePassword(request, username):
   logger.warning(request.data)
   user = User.objects.get(userName=username)
   logger.warning(user)
-  if not check_password(data['password'], user.password):
+  if not check_password(data['currentPassword'], user.password):
     return Response("Old Password is incorrect")
-  if check_password(data['new_password'], user.password):
+  if check_password(data['newPassword'], user.password):
     return Response("Same password")
-  if not data['new_password'] == data['confirm_password']:
+  if not data['newPassword'] == data['reEnteredPassword']:
     return Response("confirm password not correct")
-  user.password = make_password(data['new_password'])
+  user.password = make_password(data['newPassword'])
   user.save(update_fields=["password"])
   return Response("password changed", status=status.HTTP_200_OK)

@@ -22,6 +22,10 @@ class TokenMiddleware:
     if request.path == '/api/login' or request.path == '/' or request.path.startswith('/admin'):
       response = self.get_response(request) 
       return response
+    
+    # if request.path == '/api/khalti':
+    #   response = self.get_response(request)
+    #   return response
 
     token = request.headers.get('Authorization')
     logger.warning('token')
@@ -39,14 +43,14 @@ class TokenMiddleware:
       if request.path == '/api/user/create' and payload['role'] != Roles.ADMIN:
         message = {'message': "Unauthorized access"}
         return HttpResponse(str(message), status=status.HTTP_401_UNAUTHORIZED)
-      
-      if request.path.startswith('/api/password/update') and payload['role'] != Roles.STUDENT:
+
+      if request.path.startswith('/api/delete')  and payload['role'] != Roles.ADMIN:
         message = {'message': "Unauthorized access"}
         return HttpResponse(str(message), status=status.HTTP_401_UNAUTHORIZED)
-
-      # if request.path.startswith('/api/user/update') and payload['role'] == Roles.STUDENT:
-      #   message = {'message': "Unauthorized access"}
-      #   return HttpResponse(str(message), status=status.HTTP_401_UNAUTHORIZED)
+    
+      if request.path.startswith('/api/user/update') and payload['role'] == Roles.STUDENT:
+        message = {'message': "Unauthorized access"}
+        return HttpResponse(str(message), status=status.HTTP_401_UNAUTHORIZED)
 
       logger.warning('valid token')
       response = self.get_response(request) 
