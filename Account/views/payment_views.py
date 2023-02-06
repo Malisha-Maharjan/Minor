@@ -40,32 +40,16 @@ def transaction(request):
     amount = data['amount'])
     transaction.save()
     email.append(student.email)
-
-    if transaction.type == TransactionsTypes.PAYMENT:
-      subject = "Bill Update: Payment Received"
-      body = f"Dear {student.firstName}, \n\n I hope this email finds you in good health and spirits. I am writing to confirm that we have received your payment for the recent bill i.e. Rs{data['amount']}. I am pleased to inform you that the payment was successful and has been processed."
-
-    if transaction.type == TransactionsTypes.BILL:
-      subject = "Billing Statement"
-      body = f"Dear {student.firstName}, \n\nI hope this email finds you well. I am writing to inform you that a new bill has been added to your account. The details of the bill are as follows:\nAmount Due: Rs{data['amount']} \nPlease take a moment to review the billing statement and let us know if you have any questions or concerns. We are here to help and would be happy to assist you in any way possible."
-    
-    if transaction.type == TransactionsTypes.SCHOLARSHIP:
-      subject = "Scholarship Awarded"
-      body = f"Dear {student.firstName},\n I hope this email finds you in good health and spirits. I am writing to inform you that you have been awarded a scholarship worth Rs{data['amount']}. This scholarship is awarded to you on the basis of merit list."
-
-    sendEmail(email, subject, body)
+    # sendEmail(email)
     message={}
-    if transaction.type == TransactionsTypes.BILL:
+    if transaction.type == 1:
       message={"message": "Bill is added"}
-    if transaction.type == TransactionsTypes.PAYMENT:
+    else:
       message={"message": "Bill is paid"}
-    if transaction.type == TransactionsTypes.SCHOLARSHIP:
-      message = {'message': "Scholarship is awarded"}
     return Response(message, status=status.HTTP_200_OK)
-
   except Exception as e:
     logger.warning(e)
-    error = {"message": "Error: Operation unsuccessful"}
+    error = {"error": str(e)}
     return Response(error, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['POST'])
@@ -104,15 +88,13 @@ def khaltiVerify(request):
           faculty = student.faculty)
       transaction.save()
       email.append(student.email)
-      subject = "Bill Update: Payment Received via Khalti"
-      body = f"Dear {student.firstName}, \n\n I hope this email finds you in good health and spirits. I am writing to confirm that we have received your payment for the recent bill i.e. Rs{data['amount']} via khalti. I am pleased to inform you that the payment was successful and has been processed."
-      sendEmail(email, subject, body)
+      sendEmail(email)
       message={'message': 'Bill paid via Khalti'}
       return Response(message, status=status.HTTP_200_OK)
     message = {'message': 'Invalid data'}   
     return Response(message, status=status.HTTP_400_BAD_REQUEST)
   except Exception as e:
-    error = {"message": str(e)}
+    error = {"error": str(e)}
     return Response(error, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
@@ -123,7 +105,7 @@ def due(request, username):
     logger.warning(username)
     user = User.objects.get(userName=username)
   except Exception as e:
-    error = {"message": 'Error: User not found'}
+    error = {"error": str(e)}
     return Response(error, status=status.HTTP_404_NOT_FOUND)
   billDetail = []
   try:
@@ -142,11 +124,11 @@ def due(request, username):
       item['bill'] = bill['bill_sum']
       item['paid'] = paid['paid_sum']
       item['scholarship'] = scholarship['scholarship_sum']
-      item['due'] = bill['bill_sum'] - paid['paid_sum']- scholarship['scholarship_sum']
+      item['due'] = bill['bill_sum'] - paid['paid_sum'] + scholarship['scholarship_sum']
       billDetail.append(item)
       logger.warning(i)
   except Exception as e:
-    error = {"message": str(e)}
+    error = {"error": str(e)}
     return Response(error, status=status.HTTP_404_NOT_FOUND)
   return JsonResponse(list(billDetail), safe=False)
 
@@ -160,7 +142,7 @@ def StudentPaymentDetails(request, username):
     logger.warning(serializer.data)
     return Response(serializer.data)
   except Exception as e:
-    error = {"message": "Error: User not found"}
+    error = {"error": str(e)}
     return Response(error, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['POST'])
@@ -173,8 +155,7 @@ def upgradeSemester(request):
   students = User.objects.filter(batch=batch, faculty=faculty)
   current_semester = students.first().semester.pk
   if current_semester==8:
-    message = {"message": "Error: Invalid upgrade"}
-    return Response(message, status=status.HTTP_400_BAD_REQUEST)
+    return Response("invalid upgrade", status=status.HTTP_400_BAD_REQUEST)
   upgrade_to = Semester.objects.get(pk=current_semester+1)
   try:
     for student in students:
@@ -182,8 +163,7 @@ def upgradeSemester(request):
       student.save() 
   except Exception as e:
     logger.warning(e)
-  message = {"message": "Semester Upgraded"}
-  return Response(message, status=status.HTTP_200_OK)
+  return Response("ok")
 
 @api_view(['POST'])
 @authentication_classes([])
@@ -198,7 +178,7 @@ def bulkBillAdd(request):
     logger.warning(students)
     if students == None:
       message = {"message": "User not found"}
-      return Response(message, status=status.HTTP_404_NOT_FOUND)
+      return Response(message)
     transaction=[]
     email=[]
     for student in students:

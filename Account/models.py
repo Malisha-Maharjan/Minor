@@ -58,7 +58,6 @@ class Marks(models.Model):
   student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="student_mark")
   semester = models.ForeignKey(Semester, on_delete=models.CASCADE, related_name='semester_mark')
   subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="subject_mark")
-  faculty = models.ForeignKey(Faculty, on_delete=models.DO_NOTHING, related_name="faculty_mark")
   marks = models.FloatField()
 
 class imageModel(models.Model):
