@@ -7,11 +7,11 @@ from django.core.mail import send_mail
 from backend.settings import EMAIL_HOST_USER
 
 
-def sendEmail(email):
+def sendEmail(email, subject, body):
   logger.warning('sending email')
   logger.warning(email)
-  subject = 'welcome to GFG world'
-  message = f'Hi student, thank you for registering in geeksforgeeks.'
+  subject = subject
+  message = body
   email_from = EMAIL_HOST_USER
   recipient_list = email
   logger.warning('sending messages')
