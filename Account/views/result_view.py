@@ -32,10 +32,11 @@ def addMark(request, username):
     )
     logger.warning(result)
     result.save()
-    return Response("ok")
+    message = {"message": "Mark added"}
+    return Response(message)
   except Exception as e:
     logger.warning(e)
-    error = {"error": str(e)}
+    error = {"message": str(e)}
     return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
@@ -57,4 +58,5 @@ def getMark(request, username, id):
     return JsonResponse(list(result), safe=False)
   except Exception as e:
     logger.warning(e)
-    return Response("exception")
+    message = {"message": "User not found"}
+    return Response(message)

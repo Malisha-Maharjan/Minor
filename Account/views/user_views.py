@@ -29,17 +29,25 @@ def userCreate(request):
   try:
     message=""
     data = json.loads(request.body)
-    request.data['password'] = make_password(request.data["password"])
+    # request.data['password'] = make_password(request.data["password"])
     userSerializer = UserSerializer(data=request.data)
-    logger.warning(request.data)
+    # logger.warning(request.data)
+    # try: 
+    #   userSerializer.is_valid(raise_exception=True)
+    # except Exception as e:
+    #   logger.warning(e)
+    #   return Response("exception")
+    # logger.warning(userSerializer.is_valid(raise_exception=True))
     if userSerializer.is_valid():
       userSerializer.save()
-      message = {"message": "true"}
+      message = {"message": "User Created"}
       return Response(message, status=status.HTTP_200_OK)
   except Exception as e:
     logger.warning(e)
-    return Response("exception")
-  message = {"message": "false"}
+    message = {"message": str(e)}
+    return Response(message, status=status.HTTP_400_BAD_REQUEST)
+  # logger.warning(userSerializer.error)
+  message = {"message": "Error: Invalid data"}
   return Response(message, status=status.HTTP_400_BAD_REQUEST)
 
   # data = json.loads(request.body)
@@ -81,7 +89,7 @@ def getInfo(request, username):
   try:
     student = User.objects.get(userName=username)
   except Exception as e:
-    error = {"error": str(e)}
+    error = {"message": "Error: User not found"}
     return Response(error, status=status.HTTP_404_NOT_FOUND)
   serializer = UserSerializer(student)
   return Response(serializer.data)
@@ -93,7 +101,7 @@ def updateInfo(request, username):
   try:
     user = User.objects.get(userName=username)
   except Exception as e:
-    error = {"error": str(e)}
+    error = {"message": "Error: User not found"}
     return Response(error, status=status.HTTP_404_NOT_FOUND)
   logger.warning(user)
   # data = json.loads(request.body)
@@ -106,43 +114,45 @@ def updateInfo(request, username):
     serializer.save()
     user = User.objects.get(userName = username)
     serializer = UserSerializer(user)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    message = {"message": "Successfully updated"}
+    return Response(message, status=status.HTTP_200_OK)
   return Response("false", status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['DELETE'])
 @authentication_classes([])
 @permission_classes([])
 def deleteInfo(request, username):
-  logger.warning('hihihih')
   try:
     user = User.objects.get(userName=username)
     logger.warning(user)
   except Exception as e:
-    error = {"error": str(e)}
+    error = {"message": "Error: User not found"}
     return Response(error, status=status.HTTP_404_NOT_FOUND)
   logger.warning(user)
   user.delete()
   logger.warning('deleted')
-  return Response("true", status=status.HTTP_200_OK)
+  message = {'message': 'Account deleted successfully'}
+  return Response(message, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 def login(request):
   data = json.loads(request.body)
   logger.warning(data)
   username = data['userName']
+  password = data['password']
   try:
-    user = User.objects.get(userName = username)
-    if check_password(data['password'], user.password):
-        access = AccessToken.for_user(user)
-        access['role'] = user.role
-        access['username'] = user.userName
-        roleNames = ["Admin", "Account Staff", "Entry Staff", "Student"] 
-        data = {'access': str(access), 'role': user.role, 'roleName': roleNames[user.role - 1], 'username': user.userName, 'user_id': user.pk}
-        return Response(data, status=status.HTTP_200_OK)
+    user = User.objects.get(userName = username, password = password)
+    # if check_password(data['password'], user.password):
+    access = AccessToken.for_user(user)
+    access['role'] = user.role
+    access['username'] = user.userName
+    roleNames = ["Admin", "Account Staff", "Entry Staff", "Student"] 
+    data = {'access': str(access), 'role': user.role, 'roleName': roleNames[user.role - 1], 'username': user.userName, 'user_id': user.pk}
+    return Response(data, status=status.HTTP_200_OK)
   except Exception as e:
-    message = {"error": "Invalid Username/password"}
+    message = {"message": "Invalid Username/password"}
     return Response(message,  status=status.HTTP_404_NOT_FOUND)
-  message = {"error": "Invalid Username/password"}
+  message = {"message": "Invalid Username/password"}
   return Response(message, status=status.HTTP_401_UNAUTHORIZED)
 
 # @api_view(['GET'])
@@ -189,12 +199,29 @@ def updatePassword(request, username):
   logger.warning(request.data)
   user = User.objects.get(userName=username)
   logger.warning(user)
-  if not check_password(data['currentPassword'], user.password):
-    return Response("Old Password is incorrect")
-  if check_password(data['newPassword'], user.password):
-    return Response("Same password")
-  if not data['newPassword'] == data['reEnteredPassword']:
-    return Response("confirm password not correct")
-  user.password = make_password(data['newPassword'])
-  user.save(update_fields=["password"])
-  return Response("password changed", status=status.HTTP_200_OK)
+  # if not check_password(data['currentPassword'], user.password):
+  #   return Response("Old Password is incorrect")
+  # if check_password(data['newPassword'], user.password):
+  #   return Response("Same password")
+  # if not data['newPassword'] == data['reEnteredPassword']:
+  #   return Response("confirm password not correct")
+  # user.password = make_password(data['newPassword'])
+  # user.save(update_fields=["password"])
+  # return Response("password changed", status=status.HTTP_200_OK)
+  
+  if not (data['currentPassword'] == user.password):
+    message = {'message': "Current Password incorrect"}
+    return Response(message, status=status.HTTP_400_BAD_REQUEST)
+  if (data['newPassword'] == user.password):
+    message = {'message': "New password must differ from current password"}
+    return Response(message, status=status.HTTP_400_BAD_REQUEST)
+  if not (data['newPassword'] == data['reEnteredPassword']):
+    message = {'message': "New password and confirm password mismatched"}
+    return Response(message, status=status.HTTP_400_BAD_REQUEST)
+  user.password = data['newPassword']
+  user.save(update_fields = ['password'])
+  message = {'message': "Password changed"}
+  return Response(message, status=status.HTTP_200_OK)
+  
+
+
