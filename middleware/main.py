@@ -19,7 +19,11 @@ class TokenMiddleware:
   def __call__(self, request, *args, **kwds):
     logger.warning("Token middleware")
     logger.warning(request.path)
-    if request.path == '/api/login' or request.path == '/' or request.path.startswith('/admin'):
+    if request.path == '/api/login' or request.path == '/' or request.path.startswith('/admin') or request.path == 'api/forgot/password':
+      response = self.get_response(request) 
+      return response
+    
+    if request.path == '/api/forgot/password':
       response = self.get_response(request) 
       return response
     

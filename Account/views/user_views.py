@@ -17,6 +17,7 @@ from rest_framework_simplejwt.views import TokenVerifyView
 from backend.settings import SIMPLE_JWT
 
 from ..models import *
+from ..send_email import *
 from ..serializer import *
 
 logger = logging.getLogger(__name__)
@@ -41,6 +42,13 @@ def userCreate(request):
     if userSerializer.is_valid():
       userSerializer.save()
       message = {"message": "User Created"}
+      email = [userSerializer.data['email']]
+      subject = 'Account Created'
+      name = data['firstName']
+      username = data['userName']
+      password = data['password']
+      body = f'Dear {name},\n\n Your account has been created for Student Easy Pay and Result Analysis. Following details are your login credentials.\n\n Username = {username}\n Password = {password}\n Note: Please change your password after logged in \n\n Best Regards, \nThank you'
+      sendEmail(email, subject, body)
       return Response(message, status=status.HTTP_200_OK)
   except Exception as e:
     logger.warning(e)
@@ -50,37 +58,27 @@ def userCreate(request):
   message = {"message": "Error: Invalid data"}
   return Response(message, status=status.HTTP_400_BAD_REQUEST)
 
-  # data = json.loads(request.body)
-  # try:
-  #   user = User(
-  #   firstName = data['firstName'],
-  #   userName = data['userName'],
-  #   lastName = data['lastName'],
-  #   password = make_password(data['password']),
-  #   role = data['role'],
-  #   address = data['address'],
-  #   contact_no = data['contact_no'],
-  #   email = data['email'],
-  #   batch = data['batch'],
-  #   faculty = Faculty.objects.get(pk=data['faculty']),
-  #   semester = Semester.objects.get(pk=data['semester']))
-  #   user.save()
-  #   return Response("ok", status=status.HTTP_200_OK)
-  # except Exception as e:
-  #   logger.warning(e)
-  #   return Response("exception", status=status.HTTP_400_BAD_REQUEST)
-
-
 @api_view(['GET'])
 @authentication_classes([])
 @permission_classes([])
 def getAllInfo(request):
   logger.warning('getting info')
-  student = User.objects.filter(role=Roles.STUDENT)
+  student = User.objects.exclude(role=Roles.ADMIN)
   logger.warning('getting info')
   serializer = UserSerializer(student, many=True)
   logger.warning('getting info')
   return Response(serializer.data)
+
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
+def getStudent(request):
+  data = json.loads(request.body)
+
+  student = User.objects.filter(role=Roles.STUDENT, batch=data['batch'], faculty=data['faculty'])
+  serializer = UserSerializer(student, many=True)
+  return Response(serializer.data)
+
 
 @api_view(['GET'])
 @authentication_classes([])
@@ -152,8 +150,6 @@ def login(request):
   except Exception as e:
     message = {"message": "Invalid Username/password"}
     return Response(message,  status=status.HTTP_404_NOT_FOUND)
-  message = {"message": "Invalid Username/password"}
-  return Response(message, status=status.HTTP_401_UNAUTHORIZED)
 
 # @api_view(['GET'])
 # @authentication_classes([])
@@ -172,23 +168,6 @@ def login(request):
 #   StudentSerializer = StudentDetailsSerializer(user)
 #   logger.warning(StudentSerializer.data)
 #   return Response(StudentSerializer.data)
-
-
-# import base64
-
-# from django.core.files.storage import default_storage
-
-
-# @api_view(['GET'])
-# def imageSend(request):
-#   images = imageModel.objects.get(pk=1)
-#   image_url = str(images.image)
-#   # logger.warning(f'{image_url}')
-#   # with open("images/Screen_Shot_2020-09-26_at_10.07.13_am.png", "rb") as image_file:
-#   encoded_string = base64.b64encode(default_storage.open(image_url, "rb").read()).decode()
-#   # serializer = ImageSerializer(images)
-#   message = {'image': encoded_string}
-#   return Response(message)
 
 
 @api_view(['POST'])
@@ -223,5 +202,24 @@ def updatePassword(request, username):
   message = {'message': "Password changed"}
   return Response(message, status=status.HTTP_200_OK)
   
-
+@api_view(['POST'])
+def forgotPassword(request):
+  try:
+    data = json.loads(request.body)
+    logger.warning(data['username'])
+    user = User.objects.get(userName=data['username'])
+    logger.warning('hi')
+    if user.email != data['email']:
+      logger.warning('hello')
+      message={'message': 'Email does not match'}
+      return Response(message, status=status.HTTP_400_BAD_REQUEST)
+  except Exception as e:
+    message = {'message': str(e)}
+    return Response(message, status=status.HTTP_404_NOT_FOUND)
+  email = [user.email]
+  subject = "Password"
+  body = f"Dear {user.userName}, \n\n A request has been received to send your current password to this email.\n \t\t  Current Password to your account is {user.password}. \n\n Thank you!"
+  sendEmail(email, subject, body)
+  message = {'message': 'Please Wait, your current password is sent to your email'}
+  return Response(message, status=status.HTTP_200_OK)
 

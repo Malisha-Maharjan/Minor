@@ -1,5 +1,6 @@
-from Account.models import *
 from rest_framework import serializers
+
+from Account.models import *
 
 
 class SemesterSerializer(serializers.ModelSerializer):
@@ -29,13 +30,13 @@ class TransactionDetailSerializer(serializers.ModelSerializer):
   semester = SemesterSerializer()
   class Meta:
     model = Transaction 
-    fields = ['type', 'amount', 'semester']
+    fields = ['type', 'amount', 'date', 'semester']
 
 class UserStudentTransactionSerializer(serializers.ModelSerializer):
   transaction = TransactionDetailSerializer(many=True)
   class Meta:
     model = User
-    fields = ['userName', 'firstName', 'lastName', 'faculty', 'batch', 'transaction']
+    fields = ['transaction']
 
 class SubjectSerializer(serializers.ModelSerializer):
   class Meta:

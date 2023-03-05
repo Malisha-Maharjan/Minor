@@ -24,9 +24,15 @@ logger = logging.getLogger(__name__)
 @permission_classes([])
 def transaction(request):
   data = json.loads(request.body)
-
+  logger.warning(data)
   try:
     student = User.objects.get(userName=data['userName'])
+    logger.warning(student.semester.id)
+    logger.warning(data['semester'])
+    logger.warning(data['semester'] > student.semester.id)
+    if data['semester'] > student.semester.id:
+      logger.warning("exception")
+      raise Exception()
     semester = Semester.objects.get(pk=data['semester'])
     # serializer = TransactionSerializer(data=request.data)
     email = []
@@ -113,6 +119,7 @@ def khaltiVerify(request):
     return Response(message, status=status.HTTP_400_BAD_REQUEST)
   except Exception as e:
     error = {"message": str(e)}
+    logger.warning(e)
     return Response(error, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
@@ -128,14 +135,16 @@ def due(request, username):
   billDetail = []
   try:
     semester = Semester.objects.get(pk=user.semester.pk)
+    logger.warning(semester)
     for i in range(1, user.semester.pk + 1):
-      logger.warning('hi')
       bill = Transaction.objects.filter(user__userName=username, type=1, semester__pk=i).aggregate(bill_sum=Sum('amount'))
       paid = Transaction.objects.filter(user__userName=username, type=2, semester__pk=i).aggregate(paid_sum=Sum('amount'))
       scholarship = Transaction.objects.filter(user__userName=username, type=3, semester__pk=i).aggregate(scholarship_sum=Sum('amount'))
-      if scholarship['scholarship_sum'] == None or bill['bill_sum'] == None or paid['paid_sum'] == None:
-        scholarship['scholarship_sum'] = 0 
+      if scholarship['scholarship_sum'] == None:
+        scholarship['scholarship_sum'] = 0
+      if  bill['bill_sum'] == None: 
         bill['bill_sum'] = 0
+      if paid['paid_sum'] == None:
         paid['paid_sum'] = 0
       item={}
       item['semester'] = i
@@ -156,10 +165,14 @@ def due(request, username):
 def StudentPaymentDetails(request, username):
   try :
     user = User.objects.get(userName=username)
-    serializer = UserStudentTransactionSerializer(user)
-    logger.warning(serializer.data)
+    # serializer = UserStudentTransactionSerializer(user)
+    # logger.warning(serializer.data)
+    # return Response(serializer.data)
+    transaction = Transaction.objects.filter(user = user.pk)
+    serializer = TransactionDetailSerializer(transaction, many=True)
     return Response(serializer.data)
   except Exception as e:
+    logger.warning(e)
     error = {"message": "Error: User not found"}
     return Response(error, status=status.HTTP_404_NOT_FOUND)
 

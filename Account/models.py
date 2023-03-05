@@ -1,3 +1,5 @@
+import datetime
+
 from django.db import models
 
 
@@ -42,7 +44,7 @@ class Transaction(models.Model):
   faculty = models.ForeignKey(Faculty, on_delete=models.DO_NOTHING, related_name = "transaction_semester" )
   type = models.IntegerField(null=True)
   amount = models.FloatField(null=True)
-  date = models.DateTimeField(auto_now_add=True)
+  date = models.DateField(default=datetime.date.today())
 
 # f'select * from User where role = {Roles.STUDENT}
 #query ma garni minus

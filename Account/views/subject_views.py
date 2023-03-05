@@ -38,9 +38,19 @@ def addSubject(request):
 def getSubject(request, faculty, semester):
   subjects = Subject.objects.filter(faculty__pk=faculty, semester__pk=semester)
   serializer = SubjectSerializer(subjects, many=True)
-  
   return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+
+# @api_view(['GET'])
+# @authentication_classes([])
+# @permission_classes([])
+# def getSubject(request, username):
+#   student = User.objects.get(userName = username)
+#   subjects = Subject.objects.filter(semester__pk=student.semester.pk)
+#   serializer = SubjectSerializer(subjects, many=True)
+  
+#   return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['DELETE'])
 @authentication_classes([])
