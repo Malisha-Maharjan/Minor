@@ -65,3 +65,12 @@ class Marks(models.Model):
 
 class imageModel(models.Model):
   image = models.TextField()
+
+class Voucher(models.Model):
+  student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="student_voucher")
+  semester = models.ForeignKey(Semester, on_delete=models.CASCADE, related_name='voucher_semester')
+  faculty = models.ForeignKey(Faculty, on_delete=models.DO_NOTHING, related_name="voucher_faculty")
+  image = models.TextField(null=False, blank=False)
+  amount = models.FloatField(null=False)
+  date = models.DateField(default=datetime.date.today())
+  is_verified = models.BooleanField(default=False)

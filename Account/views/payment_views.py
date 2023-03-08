@@ -5,6 +5,7 @@ import logging
 import requests
 from django.db import connection
 from django.db.models import Sum
+from django.forms.models import model_to_dict
 from django.http import HttpResponse, JsonResponse
 from rest_framework import status
 from rest_framework.decorators import (api_view, authentication_classes,
@@ -49,15 +50,15 @@ def transaction(request):
 
     if transaction.type == TransactionsTypes.PAYMENT:
       subject = "Bill Update: Payment Received"
-      body = f"Dear {student.firstName}, \n\n I hope this email finds you in good health and spirits. I am writing to confirm that we have received your payment for the recent bill i.e. Rs{data['amount']}. I am pleased to inform you that the payment was successful and has been processed."
+      body = f"Dear {student.firstName}, \n\n I hope this email finds you in good health and spirits. I am writing to confirm that we have received your payment for the recent bill i.e. Rs{data['amount']}. I am pleased to inform you that the payment was successful and has been processed.\n Best Regards, \n LEC"
 
     if transaction.type == TransactionsTypes.BILL:
       subject = "Billing Statement"
-      body = f"Dear {student.firstName}, \n\nI hope this email finds you well. I am writing to inform you that a new bill has been added to your account. The details of the bill are as follows:\nAmount Due: Rs{data['amount']} \nPlease take a moment to review the billing statement and let us know if you have any questions or concerns. We are here to help and would be happy to assist you in any way possible."
+      body = f"Dear {student.firstName}, \n\nI hope this email finds you well. I am writing to inform you that a new bill has been added to your account. The details of the bill are as follows:\nAmount Added: Rs{data['amount']} \nPlease take a moment to review the billing statement and let us know if you have any questions or concerns. We are here to help and would be happy to assist you in any way possible. \n Best Regards, \n LEC"
     
     if transaction.type == TransactionsTypes.SCHOLARSHIP:
       subject = "Scholarship Awarded"
-      body = f"Dear {student.firstName},\n I hope this email finds you in good health and spirits. I am writing to inform you that you have been awarded a scholarship worth Rs{data['amount']}. This scholarship is awarded to you on the basis of merit list."
+      body = f"Dear {student.firstName},\n I hope this email finds you in good health and spirits. I am writing to inform you that you have been awarded a scholarship worth Rs{data['amount']}. This scholarship is awarded to you on the basis of merit list. \n Best Regards, \n LEC"
 
     sendEmail(email, subject, body)
     message={}
@@ -111,7 +112,7 @@ def khaltiVerify(request):
       transaction.save()
       email.append(student.email)
       subject = "Bill Update: Payment Received via Khalti"
-      body = f"Dear {student.firstName}, \n\n I hope this email finds you in good health and spirits. I am writing to confirm that we have received your payment for the recent bill i.e. Rs{data['amount']} via khalti. I am pleased to inform you that the payment was successful and has been processed."
+      body = f"Dear {student.firstName}, \n\n I hope this email finds you in good health and spirits. I am writing to confirm that we have received your payment for the recent bill i.e. Rs{data['amount']} via khalti. I am pleased to inform you that the payment was successful and has been processed. \n Best Regards, \n LEC"
       sendEmail(email, subject, body)
       message={'message': 'Bill paid via Khalti'}
       return Response(message, status=status.HTTP_200_OK)
@@ -180,19 +181,14 @@ def StudentPaymentDetails(request, username):
 @authentication_classes([])
 @permission_classes([])
 def upgradeSemester(request):
-  data = json.loads(request.body)
-  batch = data['batch']
-  faculty = data['faculty']
-  students = User.objects.filter(batch=batch, faculty=faculty)
-  current_semester = students.first().semester.pk
-  if current_semester==8:
-    message = {"message": "Error: Invalid upgrade"}
-    return Response(message, status=status.HTTP_400_BAD_REQUEST)
-  upgrade_to = Semester.objects.get(pk=current_semester+1)
+  students = User.objects.filter(role = Roles.STUDENT)
   try:
     for student in students:
-      student.semester = upgrade_to
-      student.save() 
+      if student.semester.pk != 8:
+        upgrade_to = Semester.objects.get(pk=student.semester.pk+1)
+        student.semester = upgrade_to
+        student.save() 
+      logger.warning(student.semester.pk)
   except Exception as e:
     logger.warning(e)
   message = {"message": "Semester Upgraded"}
@@ -202,6 +198,7 @@ def upgradeSemester(request):
 @authentication_classes([])
 @permission_classes([])
 def bulkBillAdd(request):
+  logger.warning('i am bulk entries')
   try: 
     data = json.loads(request.body)
     batch = data['batch']
@@ -217,7 +214,7 @@ def bulkBillAdd(request):
     for student in students:
       transaction.append(Transaction(
         user = student,
-        type = 1,
+        type = TransactionsTypes.BILL,
         amount = amount,
         semester = student.semester,
         faculty = student.faculty
@@ -227,10 +224,78 @@ def bulkBillAdd(request):
   except Exception as e:
     logger.warning(e)
     return Response("exception")
-  # sendEmail(email)
+  subject = "Billing Statement"
+  body = f"Dear student, \n\nI hope this email finds you well. I am writing to inform you that a new bill has been added to your account. The details of the bill are as follows:\nAmount Added: Rs{data['amount']} \nPlease take a moment to review the billing statement and let us know if you have any questions or concerns. We are here to help and would be happy to assist you in any way possible. \n Best Regards, \n LEC"
+  sendEmail(email, subject, body)
   Transaction.objects.bulk_create(transaction)
-  return Response("ok")
+  message = {"message": f"Bills have been added to the all students of {batch} batch"}
+  return Response(message, status=status.HTTP_200_OK)
 
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
+def addVoucher(request):
+  logger.warning('hi i am voucher')
+  data = json.loads(request.body)
+  logger.warning(data)
+  try: 
+    student = User.objects.get(userName = data['username'])
+    semester = Semester.objects.get(pk=data['semester'])
+    voucher = Voucher(
+      student = student,
+      semester = semester,
+      faculty = student.faculty,
+      amount = data['amount'],
+      image = data['image']
+    )
+    voucher.save()
+  except Exception as e:
+    logger.warning(e)
+    message = {'error': str(e)}
+    return Response(message)
+  message = {"message": f"Voucher Uploaded.\nYou will receive an email after your payment is verified"}
+  return Response(message)
 
+@api_view(['GET'])
+@authentication_classes([])
+@permission_classes([])
+def unverifiedVoucher(request):
+  vouchers = Voucher.objects.filter(is_verified=False).select_related().all()
+  result = []
+  for voucher in vouchers:
+    item = model_to_dict(voucher.student, fields=['userName'])
+    item['amount'] = voucher.amount
+    item['semester'] = voucher.semester.name
+    item['faculty'] = voucher.faculty.name
+    item['date'] = voucher.date
+    item['voucher_id'] = voucher.pk
+    item['image'] = voucher.image
+    result.append(item)
+  return JsonResponse(list(result), safe=False) 
 
-
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
+def verifyVoucher(request):
+  try:
+    data = json.loads(request.body)
+    voucher = Voucher.objects.get(pk=data['voucher_id'])
+    voucher.is_verified = True
+    transaction = Transaction(
+    user = voucher.student,
+    semester = voucher.semester,
+    faculty = voucher.faculty,
+    type = TransactionsTypes.PAYMENT,
+    amount = voucher.amount
+    )
+    subject = "Voucher Verification: Payment Received"
+    body = f"Dear {voucher.student.firstName}, \n\n Your payment through voucher has been verified. \n Amount: {voucher.amount} has been received\n\n Best regards,\n LEC"
+    email = [voucher.student.email]
+    sendEmail(email, subject, body)
+    voucher.save()
+    transaction.save()
+    message = {"message": "Voucher Verified."}
+    return Response("message")
+  except Exception as e:
+    message = {"Error": str(e)}
+    return Response(message)

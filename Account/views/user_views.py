@@ -3,6 +3,7 @@ import logging
 
 # from rest_framework_simplejwt.utils import 
 import jwt
+from backend.settings import SIMPLE_JWT
 from django.contrib.auth.hashers import check_password, make_password
 from django.db import connection
 from django.http import HttpResponse
@@ -13,8 +14,6 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.views import TokenVerifyView
-
-from backend.settings import SIMPLE_JWT
 
 from ..models import *
 from ..send_email import *
@@ -47,7 +46,7 @@ def userCreate(request):
       name = data['firstName']
       username = data['userName']
       password = data['password']
-      body = f'Dear {name},\n\n Your account has been created for Student Easy Pay and Result Analysis. Following details are your login credentials.\n\n Username = {username}\n Password = {password}\n Note: Please change your password after logged in \n\n Best Regards, \nThank you'
+      body = f'Dear {name},\n\n Your account has been created for Student Easy Pay and Result Analysis. Following details are your login credentials.\n\n Username = {username}\n Password = {password}\n Note: Please change your password after logged in \n\n Best Regards, \nLEC'
       sendEmail(email, subject, body)
       return Response(message, status=status.HTTP_200_OK)
   except Exception as e:

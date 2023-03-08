@@ -1,14 +1,13 @@
 import logging
 
 import jwt
+from Account.models import *
+from backend.settings import SIMPLE_JWT
 from django.http import HttpResponse
 from rest_framework import exceptions, status
 from rest_framework.decorators import (authentication_classes,
                                        permission_classes)
 from rest_framework.response import Response
-
-from Account.models import *
-from backend.settings import SIMPLE_JWT
 
 logger = logging.getLogger(__name__)
 
@@ -19,17 +18,9 @@ class TokenMiddleware:
   def __call__(self, request, *args, **kwds):
     logger.warning("Token middleware")
     logger.warning(request.path)
-    if request.path == '/api/login' or request.path == '/' or request.path.startswith('/admin') or request.path == 'api/forgot/password':
+    if request.path == '/api/login' or request.path == '/' or request.path.startswith('/admin') or request.path == '/api/forgot/password':
       response = self.get_response(request) 
       return response
-    
-    if request.path == '/api/forgot/password':
-      response = self.get_response(request) 
-      return response
-    
-    # if request.path == '/api/khalti':
-    #   response = self.get_response(request)
-    #   return response
 
     token = request.headers.get('Authorization')
     logger.warning('token')

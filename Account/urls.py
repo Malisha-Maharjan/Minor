@@ -36,13 +36,15 @@ urlpatterns = [
   # path('subject/<str:name>', subject_views.getSubject),
   # path('semester', user_views.semester)
   path('transaction', payment_views.transaction),
-  # # path('student/details/<str:username>', views.studentDetails),
   path('due/<str:username>', payment_views.due),
   path('khalti', payment_views.khaltiVerify),
+  path('voucher', payment_views.addVoucher),
+  path('unverified/voucher', payment_views.unverifiedVoucher),
+  path('verify/voucher', payment_views.verifyVoucher),
   path('payment/details/<str:username>', payment_views.StudentPaymentDetails),
   path('bulk', payment_views.bulkBillAdd),
   path('upgrade/semester', payment_views.upgradeSemester),
   path('mark', prefetch.mark),
-  path('graph/data/<str:username>', result_views.getGraph)
-  # # path('subject', views.subject)
+  path('graph/data/<str:username>', result_views.getGraph),
+  path('prediction/<str:username>', result_views.model)
 ]+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

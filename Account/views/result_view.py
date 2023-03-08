@@ -123,3 +123,46 @@ def updateMarks(request, username, semester):
         mark.save(update_fields = ['marks'])
   message = {'message': 'Result updated'}
   return Response(message)
+
+
+import os
+import sys
+from pathlib import Path
+
+import joblib
+
+dataFolder = Path(r'/Users/malisha/Desktop/model/Jupyter/prediction.joblib')
+@api_view(['GET'])
+@authentication_classes([])
+@permission_classes([])
+def model(request, username):
+  try:
+    student = User.objects.get(userName=username)
+    logger.warning(student.semester.pk)
+    mark = Marks.objects.filter(semester__pk = 7, student__userName = username).first()
+    if mark == None:
+      message = {'message': 'Prediction is not available. Please wait until you get your 7th sem result.'}
+      return Response(message)
+  except Exception as e:
+    logger.warning(e)
+    return Response('Error')
+  try: 
+    data = []
+    marks = Marks.objects.filter(student__userName = username)
+    for mark in marks:
+      if mark.marks < 32:
+        data.append(0)
+      else:
+        data.append(1)
+    loaded_model = joblib.load(dataFolder)
+
+    logger.warning(data)
+    value = loaded_model.predict([data])
+    if value == 1:
+      message = {'message': 'Prediction: You will pass your 8th semester.'}
+    else:
+      message = {'message': 'Prediction: You will fail your 8th semester'}
+    logging.warning(value)
+  except Exception as e:
+    logger.warning(e)
+  return Response(message)

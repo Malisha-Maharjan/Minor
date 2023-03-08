@@ -59,8 +59,3 @@ class MarksSerializer(serializers.ModelSerializer):
 #   class Meta:
 
 
-class ImageSerializer(serializers.ModelSerializer):
-  class Meta:
-    model = imageModel
-    fields = '__all__'
-
