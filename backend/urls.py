@@ -18,6 +18,11 @@ from django.urls import include, path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('Account.urls')),
+    # path('api/', include('Account.urls')),
+    path('api/', include('Account.url.payment_urls')),
+    path('api/', include('Account.url.result_urls')),
+    path('api/', include('Account.url.subject_urls')),
+    path('api/', include('Account.url.prefetch_urls')),
+    path('api/', include('Account.url.user_urls'))
     # path('khalti/', include('khalti.urls'))
 ]

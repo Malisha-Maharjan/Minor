@@ -45,6 +45,7 @@ class Transaction(models.Model):
   type = models.IntegerField(null=True)
   amount = models.FloatField(null=True)
   date = models.DateField(default=datetime.date.today())
+  
 
 # f'select * from User where role = {Roles.STUDENT}
 #query ma garni minus

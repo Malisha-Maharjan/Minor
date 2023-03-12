@@ -1,9 +1,7 @@
 import json
 import logging
 
-# from rest_framework_simplejwt.utils import 
 import jwt
-from backend.settings import SIMPLE_JWT
 from django.contrib.auth.hashers import check_password, make_password
 from django.db import connection
 from django.http import HttpResponse
@@ -14,6 +12,8 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.views import TokenVerifyView
+
+from backend.settings import SIMPLE_JWT
 
 from ..models import *
 from ..send_email import *
@@ -28,30 +28,32 @@ cursor=connection.cursor()
 def userCreate(request):
   try:
     message=""
-    data = json.loads(request.body)
+    # data = json.loads(request.body)
     # request.data['password'] = make_password(request.data["password"])
     userSerializer = UserSerializer(data=request.data)
-    # logger.warning(request.data)
-    # try: 
-    #   userSerializer.is_valid(raise_exception=True)
-    # except Exception as e:
-    #   logger.warning(e)
-    #   return Response("exception")
-    # logger.warning(userSerializer.is_valid(raise_exception=True))
+    logger.warning(request.data)
+    try: 
+      userSerializer.is_valid(raise_exception=True)
+    except Exception as e:
+      logger.warning(e)
+      return Response(e, status=status.HTTP_400_BAD_REQUEST)
+    logger.warning(userSerializer.is_valid(raise_exception=True))
     if userSerializer.is_valid():
+      logger.warning(userSerializer)
       userSerializer.save()
       message = {"message": "User Created"}
       email = [userSerializer.data['email']]
       subject = 'Account Created'
-      name = data['firstName']
-      username = data['userName']
-      password = data['password']
-      body = f'Dear {name},\n\n Your account has been created for Student Easy Pay and Result Analysis. Following details are your login credentials.\n\n Username = {username}\n Password = {password}\n Note: Please change your password after logged in \n\n Best Regards, \nLEC'
+      name = userSerializer.data['firstName']
+      username = userSerializer.data['userName']
+      password = userSerializer.data['password']
+      body = f'Dear {name},\n\n Your account has been created for Student Easy Pay and Result Analysis. Following details are your login credentials.\n\n Username = {username}\n Password = {password}\n Note: Please change your password after logged in \n\n Best Regards,\n\n Student Portal'
       sendEmail(email, subject, body)
       return Response(message, status=status.HTTP_200_OK)
   except Exception as e:
     logger.warning(e)
     message = {"message": str(e)}
+    logger.warning(e)
     return Response(message, status=status.HTTP_400_BAD_REQUEST)
   # logger.warning(userSerializer.error)
   message = {"message": "Error: Invalid data"}
@@ -150,25 +152,6 @@ def login(request):
     message = {"message": "Invalid Username/password"}
     return Response(message,  status=status.HTTP_404_NOT_FOUND)
 
-# @api_view(['GET'])
-# @authentication_classes([])
-# @permission_classes([])
-# def hello(request):
-#   logger.warning('hhhh')
-#   message = {'message': 'hello'}
-  
-#   return Response(message)
-
-# @api_view(['GET'])
-# def studentDetails(request, username):
-#   logger.warning('details api')
-#   user = User.objects.get(userName = username)
-#   # student = Student.objects.get(student__userName=username)
-#   StudentSerializer = StudentDetailsSerializer(user)
-#   logger.warning(StudentSerializer.data)
-#   return Response(StudentSerializer.data)
-
-
 @api_view(['POST'])
 @authentication_classes([])
 @permission_classes([])
@@ -222,3 +205,19 @@ def forgotPassword(request):
   message = {'message': 'Please Wait, your current password is sent to your email'}
   return Response(message, status=status.HTTP_200_OK)
 
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
+def upgradeSemester(request):
+  students = User.objects.filter(role = Roles.STUDENT)
+  try:
+    for student in students:
+      if student.semester.pk != 8:
+        upgrade_to = Semester.objects.get(pk=student.semester.pk+1)
+        student.semester = upgrade_to
+        student.save() 
+      logger.warning(student.semester.pk)
+  except Exception as e:
+    logger.warning(e)
+  message = {"message": "Semester Upgraded"}
+  return Response(message, status=status.HTTP_200_OK)

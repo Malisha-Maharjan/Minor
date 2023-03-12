@@ -52,7 +52,6 @@ def addMark(request, username, semester):
 @authentication_classes([])
 @permission_classes([])
 def getMark(request, username, id):
-  pass
   try:
     student = User.objects.get(userName=username)
     # mark = Marks.objects.filter(semester__pk = id, student__pk = student.pk).select_related('subject')
@@ -159,9 +158,9 @@ def model(request, username):
     logger.warning(data)
     value = loaded_model.predict([data])
     if value == 1:
-      message = {'message': 'Prediction: You will pass your 8th semester.'}
+      message = {'message': 'You will pass your 8th semester.'}
     else:
-      message = {'message': 'Prediction: You will fail your 8th semester'}
+      message = {'message': 'You will fail your 8th semester'}
     logging.warning(value)
   except Exception as e:
     logger.warning(e)
