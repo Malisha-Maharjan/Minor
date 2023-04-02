@@ -22,16 +22,25 @@ logger = logging.getLogger(__name__)
 def addMark(request, username, semester):
   logger.warning('inside mark')
   marks = json.loads(request.body)
-  logger.warning(marks[0])
+  logger.warning(marks)
+  logger.warning(len(marks))
+  logger.warning(len(marks))
   try: 
     student = User.objects.get(userName=username)
-    if student.semester.pk < semester:
-      message = {'message': 'invalid data'}
+    if  Marks.objects.filter(student=student.pk, semester=semester).first():
+      logger.warning('presented')
+      message = {'message': 'Result entry already exist.' }
+      return Response(message, status=status.HTTP_400_BAD_REQUEST)
+    if student.semester.pk - 1 < semester:
+      message = {'message': 'Student does not fulfill the required criteria: Semester'}
       return Response(message, status=status.HTTP_400_BAD_REQUEST)
     semester = Semester.objects.get(pk=semester)
     # subjects = Subject.objects.filter(semester__pk=semester).first()
     # subject_id = subjects.pk
     for mark in marks:
+      if mark['mark'] == None:
+        message = {'message': 'Please fill all the fields'}
+        return Response(message, status=status.HTTP_400_BAD_REQUEST)
       subject = Subject.objects.get(pk=mark['id'])
       result = Marks(
         student = student,
@@ -41,8 +50,8 @@ def addMark(request, username, semester):
         faculty = student.faculty
       )
       result.save()
-      message = {'message': 'marks added'}
-      return Response(message)
+    message = {'message': 'marks added'}
+    return Response(message)
   except Exception as e:
     logger.warning(e)
     error = {"message": str(e)}
@@ -91,12 +100,14 @@ def getGraph(request, username):
       y_axis.append(mark['total_sum'])
       semester = Semester.objects.get(pk=i)
       x_axis.append(semester.name)
+      logger.warning(i)
   except Exception as e:
     logger.warning(e)
   logger.warning(y_axis)
   logger.warning(x_axis)
   x = np.array(x_axis)
   y = np.array(y_axis)
+  logger.warning(x)
   message = {'x': x, 'y': y}
   # plt.plot(x, y)
   # plt.show()
@@ -130,7 +141,7 @@ from pathlib import Path
 
 import joblib
 
-dataFolder = Path(r'/Users/malisha/Desktop/model/Jupyter/prediction.joblib')
+dataFolder = Path(r'/Users/malisha/Desktop/lastmodel/Jupyter/next_model23.joblib')
 @api_view(['GET'])
 @authentication_classes([])
 @permission_classes([])
@@ -154,8 +165,9 @@ def model(request, username):
       else:
         data.append(1)
     loaded_model = joblib.load(dataFolder)
-
-    logger.warning(data)
+#     data =[1 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,1 ,1 ,1 ,1, 1, 1, 1, 0 ,1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1,
+#  1, 0, 1, 1, 1, 1, 1, 1, 0 ,1, 1]
+    # logger.warning(data)
     value = loaded_model.predict([data])
     if value == 1:
       message = {'message': 'You will pass your 8th semester.'}

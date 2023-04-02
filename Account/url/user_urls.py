@@ -13,4 +13,5 @@ urlpatterns = [
   path('forgot/password', user_views.forgotPassword),
   path('login', user_views.login),
   path('upgrade/semester', user_views.upgradeSemester),
+  # path('update/<int:id>', user_views.updateSemester)
 ]

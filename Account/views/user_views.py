@@ -35,11 +35,12 @@ def userCreate(request):
     try: 
       userSerializer.is_valid(raise_exception=True)
     except Exception as e:
-      logger.warning(e)
-      return Response(e, status=status.HTTP_400_BAD_REQUEST)
+      
+      message = {'message': str(e)}
+      return Response(message, status=status.HTTP_400_BAD_REQUEST)
     logger.warning(userSerializer.is_valid(raise_exception=True))
     if userSerializer.is_valid():
-      logger.warning(userSerializer)
+      # logger.warning(userSerializer)
       userSerializer.save()
       message = {"message": "User Created"}
       email = [userSerializer.data['email']]
@@ -156,38 +157,57 @@ def login(request):
 @authentication_classes([])
 @permission_classes([])
 def updatePassword(request, username):
-  data = json.loads(request.body)
-  logger.warning(request.data)
-  user = User.objects.get(userName=username)
-  logger.warning(user)
-  # if not check_password(data['currentPassword'], user.password):
-  #   return Response("Old Password is incorrect")
-  # if check_password(data['newPassword'], user.password):
-  #   return Response("Same password")
-  # if not data['newPassword'] == data['reEnteredPassword']:
-  #   return Response("confirm password not correct")
-  # user.password = make_password(data['newPassword'])
-  # user.save(update_fields=["password"])
-  # return Response("password changed", status=status.HTTP_200_OK)
+  try:
+    data = json.loads(request.body)
+    logger.warning(request.data)
+    user = User.objects.get(userName=username)
+    logger.warning(user)
+    # if not check_password(data['currentPassword'], user.password):
+    #   return Response("Old Password is incorrect")
+    # if check_password(data['newPassword'], user.password):
+    #   return Response("Same password")
+    # if not data['newPassword'] == data['reEnteredPassword']:
+    #   return Response("confirm password not correct")
+    # user.password = make_password(data['newPassword'])
+    # user.save(update_fields=["password"])
+    # return Response("password changed", status=status.HTTP_200_OK)
+    if len(data['currentPassword']) == 0 or len(data['newPassword']) == 0 or len(data['newPassword']) == 0:
+      message = {'message': 'Invalid Data'}
+      return Response(message, status=status.HTTP_400_BAD_REQUEST)
+    message = validate_password(data['newPassword'])
+    if message != None:
+      return Response(message, status=status.HTTP_400_BAD_REQUEST)
+    message = validate_password(data['reEnteredPassword'])
+    if message != None:
+      return Response(message, status=status.HTTP_400_BAD_REQUEST)
+    if not (data['currentPassword'] == user.password):
+      message = {'message': "Current Password incorrect"}
+      return Response(message, status=status.HTTP_400_BAD_REQUEST)
+    if (data['newPassword'] == user.password):
+      message = {'message': "New password must differ from current password"}
+      return Response(message, status=status.HTTP_400_BAD_REQUEST)
+    if not (data['newPassword'] == data['reEnteredPassword']):
+      message = {'message': "New password and confirm password mismatched"}
+      return Response(message, status=status.HTTP_400_BAD_REQUEST)
+    user.password = data['newPassword']
+    user.save(update_fields = ['password'])
+    message = {'message': "Password changed"}
+    return Response(message, status=status.HTTP_200_OK)
+  except Exception as e:
+    return Response(str(e))
   
-  if not (data['currentPassword'] == user.password):
-    message = {'message': "Current Password incorrect"}
-    return Response(message, status=status.HTTP_400_BAD_REQUEST)
-  if (data['newPassword'] == user.password):
-    message = {'message': "New password must differ from current password"}
-    return Response(message, status=status.HTTP_400_BAD_REQUEST)
-  if not (data['newPassword'] == data['reEnteredPassword']):
-    message = {'message': "New password and confirm password mismatched"}
-    return Response(message, status=status.HTTP_400_BAD_REQUEST)
-  user.password = data['newPassword']
-  user.save(update_fields = ['password'])
-  message = {'message': "Password changed"}
-  return Response(message, status=status.HTTP_200_OK)
   
 @api_view(['POST'])
 def forgotPassword(request):
+  data = json.loads(request.body)
+  logger.warning(data)
+  if data['username'] == None or data['email'] == None:
+    message = {'message': 'Please fill the field'}
+    return Response(message, status=status.HTTP_400_BAD_REQUEST)
+  if len(data['username']) == 0 or len(data['email']) == 0:
+    message = {'message': 'Please fill the field'}
+    return Response(message, status=status.HTTP_400_BAD_REQUEST)
   try:
-    data = json.loads(request.body)
     logger.warning(data['username'])
     user = User.objects.get(userName=data['username'])
     logger.warning('hi')
@@ -200,7 +220,7 @@ def forgotPassword(request):
     return Response(message, status=status.HTTP_404_NOT_FOUND)
   email = [user.email]
   subject = "Password"
-  body = f"Dear {user.userName}, \n\n A request has been received to send your current password to this email.\n \t\t  Current Password to your account is {user.password}. \n\n Thank you!"
+  body = f"Dear {user.firstName}, \n\n A request has been received to send your current password to this email.\n \t\t  Current Password of your account is {user.password}. \n\n Thank you!"
   sendEmail(email, subject, body)
   message = {'message': 'Please Wait, your current password is sent to your email'}
   return Response(message, status=status.HTTP_200_OK)
@@ -209,14 +229,19 @@ def forgotPassword(request):
 @authentication_classes([])
 @permission_classes([])
 def upgradeSemester(request):
-  students = User.objects.filter(role = Roles.STUDENT)
+  students = User.objects.filter(role=Roles.STUDENT)
+  logger.warn(students)
   try:
     for student in students:
+      logger.warning(student)
+      # logger.warning(student.semester)
+      logger.warning(student.semester.pk)
       if student.semester.pk != 8:
+        logger.warning('hihi')
         upgrade_to = Semester.objects.get(pk=student.semester.pk+1)
         student.semester = upgrade_to
         student.save() 
-      logger.warning(student.semester.pk)
+        logger.warning(student.semester.pk)
   except Exception as e:
     logger.warning(e)
   message = {"message": "Semester Upgraded"}

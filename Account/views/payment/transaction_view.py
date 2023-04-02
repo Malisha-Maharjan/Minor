@@ -20,6 +20,9 @@ logger = logging.getLogger(__name__)
 def transaction(request):
   data = json.loads(request.body)
   logger.warning(data)
+  if data['amount'] == None or len(data['userName']) == 0 or data['semester'] == None:
+    message = {'message': 'Please fill all the fields'}
+    return Response(message, status=status.HTTP_400_BAD_REQUEST)
   try:
     student = User.objects.get(userName=data['userName'])
     logger.warning(student.semester.pk)
@@ -38,14 +41,14 @@ def transaction(request):
     if due['due'] < data['amount']:
       message = {"message": f"The amount you entered exceeds the due limit. Your due is Rs.{due['due']}."}
       return Response(message)
-    # transaction = Transaction(
-    # user = student,
-    # semester = semester,
-    # faculty = student.faculty,
-    # type = data['type'],
-    # amount = data['amount'])
-    # logger.warning(due)
-    # transaction.save()
+    transaction = Transaction(
+    user = student,
+    semester = semester,
+    faculty = student.faculty,
+    type = data['type'],
+    amount = data['amount'])
+    logger.warning(due)
+    transaction.save()
     email.append(student.email)
 
     if transaction.type == TransactionsTypes.PAYMENT:
@@ -183,7 +186,7 @@ def bulkBillAdd(request):
     logger.warning(students)
     if students == None:
       message = {"message": "User not found"}
-      return Response(message, status=status.HTTP_404_NOT_FOUND)
+      return Response(message, status=status.HTTP_400_BAD_REQUEST)
     transaction=[]
     email=[]
     for student in students:
@@ -197,7 +200,8 @@ def bulkBillAdd(request):
       email.append(student.email)
   except Exception as e:
     logger.warning(e)
-    return Response("exception")
+    message = {'message': 'Invalid Data'}
+    return Response(message,  status=status.HTTP_404_NOT_FOUND)
   subject = "Billing Statement"
   body = f"Dear student, \n\nI hope this email finds you well. I am writing to inform you that a new bill has been added to your account. The details of the bill are as follows:\nAmount Added: Rs{data['amount']} \nPlease take a moment to review the billing statement and let us know if you have any questions or concerns. We are here to help and would be happy to assist you in any way possible. \n Best Regards, \n LEC"
   sendEmail(email, subject, body)

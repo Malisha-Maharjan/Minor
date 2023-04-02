@@ -56,7 +56,7 @@ def khaltiVerify(request):
       transaction.save()
       email.append(student.email)
       subject = "Bill Update: Payment Received via Khalti"
-      body = f"Dear {student.firstName}, \n\n I hope this email finds you in good health and spirits. I am writing to confirm that we have received your payment for the recent bill i.e. Rs{data['amount']} via khalti. I am pleased to inform you that the payment was successful and has been processed. \n Best Regards, \n Student Portal"
+      body = f"Dear {student.firstName}, \n\n I hope this email finds you in good health and spirits. I am writing to confirm that we have received your payment for the recent bill i.e. Rs{data['amount']/100} via khalti. I am pleased to inform you that the payment was successful and has been processed. \n Best Regards, \n Student Portal"
       sendEmail(email, subject, body)
       message={'message': 'Bill paid via Khalti'}
       return Response(message, status=status.HTTP_200_OK)

@@ -2,6 +2,8 @@ import datetime
 
 from django.db import models
 
+from .validation import *
+
 
 class Roles(object):
   ADMIN = 1
@@ -21,12 +23,12 @@ class Faculty(models.Model):
   name = models.CharField(max_length= 10)
 class User(models.Model):
   userName = models.CharField(max_length=100, unique=True)
-  firstName = models.CharField(max_length=100)
+  firstName = models.CharField(max_length=30, null=True, blank=True)
   middleName = models.CharField(max_length=100, null=True)
-  lastName = models.CharField(max_length=100)
-  password = models.CharField(max_length=100)
-  role = models.IntegerField()
-  address = models.CharField(max_length = 100, null=True)
+  lastName = models.CharField(max_length=30, null=False, blank=False)
+  password = models.CharField(max_length=30, null=False)
+  role = models.IntegerField(null=False)
+  address = models.CharField(max_length = 100, null=False)
   # image = models.ImageField(upload_to='images',null=True, blank=False)
   image = models.TextField(null=True, blank=True)
   contact_no = models.CharField(max_length=10, null=True, blank=True)
@@ -42,8 +44,8 @@ class Transaction(models.Model):
   user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="transaction")
   semester = models.ForeignKey(Semester, null=True, on_delete=models.DO_NOTHING, related_name="semester")
   faculty = models.ForeignKey(Faculty, on_delete=models.DO_NOTHING, related_name = "transaction_semester" )
-  type = models.IntegerField(null=True)
-  amount = models.FloatField(null=True)
+  type = models.IntegerField(null=False)
+  amount = models.FloatField(null=False)
   date = models.DateField(default=datetime.date.today())
   
 
@@ -62,7 +64,7 @@ class Marks(models.Model):
   semester = models.ForeignKey(Semester, on_delete=models.CASCADE, related_name='semester_mark')
   subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="subject_mark")
   faculty = models.ForeignKey(Faculty, on_delete=models.DO_NOTHING, related_name="faculty_mark")
-  marks = models.FloatField()
+  marks = models.FloatField(null=False)
 
 class imageModel(models.Model):
   image = models.TextField()
